@@ -62,7 +62,7 @@ func start(db *model.Model, tg *tgbot.TGBot, chID, ytAPIkey string) {
 		}
 
 		tg.NumberIterations++
-		time.Sleep(time.Second * 30)
+		time.Sleep(time.Minute * 5)
 	}
 }
 
