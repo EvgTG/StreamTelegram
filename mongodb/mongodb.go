@@ -47,8 +47,8 @@ func (m *Mong) Check(id string) (bool, error) {
 		}
 	}
 
-	if len(m.VIDL.VideoIDs) >= 5 {
-		m.VIDL.VideoIDs = append(m.VIDL.VideoIDs[1:5], id)
+	if len(m.VIDL.VideoIDs) >= 50 {
+		m.VIDL.VideoIDs = append(m.VIDL.VideoIDs[1:50], id)
 	} else {
 		m.VIDL.VideoIDs = append(m.VIDL.VideoIDs, id)
 	}
@@ -70,8 +70,10 @@ func (m *Mong) GetLs(ls *model.VideoIDList) error {
 func (m *Mong) SetLs(ls *model.VideoIDList) error {
 	err := m.Mongo.Database(m.NameCol).Collection("VideoIDList").FindOneAndReplace(context.TODO(), bson.D{{}}, ls).Err()
 
-	if err.Error() == "mongo: no documents in result" {
-		_, err = m.Mongo.Database(m.NameCol).Collection("VideoIDList").InsertOne(context.TODO(), ls)
+	if err != nil {
+		if err.Error() == "mongo: no documents in result" {
+			_, err = m.Mongo.Database(m.NameCol).Collection("VideoIDList").InsertOne(context.TODO(), ls)
+		}
 	}
 
 	return err
