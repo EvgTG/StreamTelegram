@@ -11,10 +11,11 @@ import (
 )
 
 type TGBot struct {
-	tgBot        *tgbotapi.BotAPI
-	updateConfig tgbotapi.UpdateConfig
-	toID         int64
-	errorToID    int64
+	tgBot            *tgbotapi.BotAPI
+	updateConfig     tgbotapi.UpdateConfig
+	toID             int64
+	errorToID        int64
+	NumberIterations int
 }
 
 func New(proxy, token string, toID, errorToID int64) (*TGBot, error) {
@@ -42,7 +43,7 @@ func New(proxy, token string, toID, errorToID int64) (*TGBot, error) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	return &TGBot{tgBot, u, toID, errorToID}, nil
+	return &TGBot{tgBot, u, toID, errorToID, 0}, nil
 }
 
 func (bt *TGBot) SendNotification(text string) {
@@ -75,7 +76,7 @@ func (tb *TGBot) Start() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 			switch update.Message.Command() {
 			case "start":
-				msg.Text = fmt.Sprintf("Uptime: %s", time.Since(uptime).Round(time.Second))
+				msg.Text = fmt.Sprintf("Uptime: %s\nNumber of iterations: %v", time.Since(uptime).Round(time.Second), tb.NumberIterations)
 				tb.tgBot.Send(msg)
 			}
 			continue
