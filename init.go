@@ -47,10 +47,19 @@ func NewTGBot(conf *config.Config) *tgbot.TGBot {
 	}
 	toID, err := strconv.ParseInt(toIDs, 10, 64)
 	if err != nil {
-		log.Fatal("strconv.ParseInt: ", err)
+		log.Fatal("TOID strconv.ParseInt: ", err)
 	}
 
-	tgBot, err := tgbot.New(conf.GetString("PROXY"), conf.GetString("TOKEN"), toID)
+	var errorToID int64
+	errorToIDs := conf.GetString("ERRORTOID")
+	if toIDs != "" {
+		errorToID, err = strconv.ParseInt(errorToIDs, 10, 64)
+		if err != nil {
+			log.Fatal("ERRORTOID strconv.ParseInt: ", err)
+		}
+	}
+
+	tgBot, err := tgbot.New(conf.GetString("PROXY"), conf.GetString("TOKEN"), toID, errorToID)
 	if err != nil {
 		log.Fatal("tgbot.New: ", err)
 	}

@@ -14,9 +14,10 @@ type TGBot struct {
 	tgBot        *tgbotapi.BotAPI
 	updateConfig tgbotapi.UpdateConfig
 	toID         int64
+	errorToID    int64
 }
 
-func New(proxy, token string, toID int64) (*TGBot, error) {
+func New(proxy, token string, toID, errorToID int64) (*TGBot, error) {
 	client := &http.Client{
 		Timeout: time.Second * 60,
 	}
@@ -41,11 +42,19 @@ func New(proxy, token string, toID int64) (*TGBot, error) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	return &TGBot{tgBot, u, toID}, nil
+	return &TGBot{tgBot, u, toID, errorToID}, nil
 }
 
 func (bt *TGBot) SendNotification(text string) {
 	msg := tgbotapi.NewMessage(bt.toID, text)
+	bt.tgBot.Send(msg)
+}
+
+func (bt *TGBot) SendLog(text string) {
+	if bt.errorToID == 0 {
+		return
+	}
+	msg := tgbotapi.NewMessage(bt.errorToID, text)
 	bt.tgBot.Send(msg)
 }
 

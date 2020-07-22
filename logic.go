@@ -14,7 +14,6 @@ import (
 )
 
 //TODO заменить фаталы на одну функцию
-//TODO закинуть в цикл
 func start(db *model.Model, tg *tgbot.TGBot, chID, ytAPIkey string) {
 	ctx := context.Background()
 	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(ytAPIkey))
@@ -28,49 +27,53 @@ func start(db *model.Model, tg *tgbot.TGBot, chID, ytAPIkey string) {
 		log.Fatal(err)
 	}
 
-	idsForCheck := []string{}
-	feed, _ := fp.ParseURL("https://www.youtube.com/feeds/videos.xml?channel_id=" + chID)
-	for _, value := range feed.Items {
-		if !strings.Contains(value.GUID, "yt:video:") {
-			continue
-		}
-		vID := strings.Replace(value.GUID, "yt:video:", "", 1)
-		bl, err := db.Check(vID)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if bl {
-			continue
-		}
-		idsForCheck = append(idsForCheck, vID)
-	}
-
-	video := youtubeService.Videos.List([]string{"snippet", "liveStreamingDetails"})
-	video.Id(strings.Join(idsForCheck, ","))
-	videoRes, err := video.Do()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, value := range videoRes.Items {
-		if value.Snippet.LiveBroadcastContent != "live" && value.Snippet.LiveBroadcastContent != "upcoming" {
-			continue
-		}
-
-		switch value.Snippet.LiveBroadcastContent {
-		case "live":
-			text := fmt.Sprintf("%v\n\nyoutube.com/watch?v=%v", value.Snippet.Title, value.Id)
-			tg.SendNotification(text)
-		case "upcoming":
-			layout := "2006-01-02T15:04:05Z"
-			t, err := time.Parse(layout, value.LiveStreamingDetails.ScheduledStartTime)
+	for {
+		idsForCheck := []string{}
+		feed, _ := fp.ParseURL("https://www.youtube.com/feeds/videos.xml?channel_id=" + chID)
+		for _, value := range feed.Items {
+			if !strings.Contains(value.GUID, "yt:video:") {
+				continue
+			}
+			vID := strings.Replace(value.GUID, "yt:video:", "", 1)
+			bl, err := db.Check(vID)
 			if err != nil {
 				log.Fatal(err)
 			}
-			t = t.In(loc)
-			text := fmt.Sprintf("%v\n\nЗапланировано на %v по Мск\nyoutube.com/watch?v=%v", value.Snippet.Title, t.Format("2 Jan 15:04"), value.Id)
-			tg.SendNotification(text)
+			if bl {
+				continue
+			}
+			idsForCheck = append(idsForCheck, vID)
 		}
+
+		video := youtubeService.Videos.List([]string{"snippet", "liveStreamingDetails"})
+		video.Id(strings.Join(idsForCheck, ","))
+		videoRes, err := video.Do()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, value := range videoRes.Items {
+			if value.Snippet.LiveBroadcastContent != "live" && value.Snippet.LiveBroadcastContent != "upcoming" {
+				continue
+			}
+
+			switch value.Snippet.LiveBroadcastContent {
+			case "live":
+				text := fmt.Sprintf("%v\n\nyoutube.com/watch?v=%v", value.Snippet.Title, value.Id)
+				tg.SendNotification(text)
+			case "upcoming":
+				layout := "2006-01-02T15:04:05Z"
+				t, err := time.Parse(layout, value.LiveStreamingDetails.ScheduledStartTime)
+				if err != nil {
+					log.Fatal(err)
+				}
+				t = t.In(loc)
+				text := fmt.Sprintf("%v\n\nЗапланировано на %v по Мск\nyoutube.com/watch?v=%v", value.Snippet.Title, t.Format("2 Jan 15:04"), value.Id)
+				tg.SendNotification(text)
+			}
+		}
+
+		time.Sleep(time.Second * 30)
 	}
 
 	//fmt.Println(feed.Title)
