@@ -1,9 +1,9 @@
 package main
 
 import (
-	"StreamTelegram/go-log"
 	"StreamTelegram/model"
 	"StreamTelegram/tgbot"
+	u "StreamTelegram/utility"
 	"context"
 	"fmt"
 	"github.com/mmcdole/gofeed"
@@ -13,19 +13,13 @@ import (
 	"time"
 )
 
-//TODO заменить фаталы на одну функцию
 func start(db *model.Model, tg *tgbot.TGBot, chID, ytAPIkey string) {
 	ctx := context.Background()
 	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(ytAPIkey))
-	if err != nil {
-		log.Fatal(err)
-	}
+	u.FatalTG("main.start - youtube.NewService", tg, err)
 	fp := gofeed.NewParser()
-	//TODO перевести в конфиг
 	loc, err := time.LoadLocation("Europe/Moscow")
-	if err != nil {
-		log.Fatal(err)
-	}
+	u.FatalTG("main.start - time.LoadLocation", tg, err)
 
 	for {
 		idsForCheck := []string{}
@@ -36,9 +30,7 @@ func start(db *model.Model, tg *tgbot.TGBot, chID, ytAPIkey string) {
 			}
 			vID := strings.Replace(value.GUID, "yt:video:", "", 1)
 			bl, err := db.Check(vID)
-			if err != nil {
-				log.Fatal(err)
-			}
+			u.FatalTG("main.start - db.Check", tg, err)
 			if bl {
 				continue
 			}
@@ -48,9 +40,7 @@ func start(db *model.Model, tg *tgbot.TGBot, chID, ytAPIkey string) {
 		video := youtubeService.Videos.List([]string{"snippet", "liveStreamingDetails"})
 		video.Id(strings.Join(idsForCheck, ","))
 		videoRes, err := video.Do()
-		if err != nil {
-			log.Fatal(err)
-		}
+		u.FatalTG("main.start - youtubeService.Videos.List.Do", tg, err)
 
 		for _, value := range videoRes.Items {
 			if value.Snippet.LiveBroadcastContent != "live" && value.Snippet.LiveBroadcastContent != "upcoming" {
@@ -64,9 +54,7 @@ func start(db *model.Model, tg *tgbot.TGBot, chID, ytAPIkey string) {
 			case "upcoming":
 				layout := "2006-01-02T15:04:05Z"
 				t, err := time.Parse(layout, value.LiveStreamingDetails.ScheduledStartTime)
-				if err != nil {
-					log.Fatal(err)
-				}
+				u.FatalTG("main.start - time.Parse", tg, err)
 				t = t.In(loc)
 				text := fmt.Sprintf("%v\n\nЗапланировано на %v по Мск\nyoutube.com/watch?v=%v", value.Snippet.Title, t.Format("2 Jan 15:04"), value.Id)
 				tg.SendNotification(text)
@@ -75,56 +63,54 @@ func start(db *model.Model, tg *tgbot.TGBot, chID, ytAPIkey string) {
 
 		time.Sleep(time.Second * 30)
 	}
+}
 
-	//fmt.Println(feed.Title)
+/*ctx := context.Background()
+youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(ytAPIkey))
+if err != nil {
+	log.Fatal(err)
+}*/
 
-	/*ctx := context.Background()
-	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(ytAPIkey))
+/*ts := youtubeService.Channels.List([]string{"topicDetails"})
+ts.Id(chID)
+tss, err := ts.Do()
+for i, v := range tss.Items {
+	log.Infof("%v - %s", i, v.Snippet.Title)
+}*/
+
+/*for {
+	liveStReg := youtubeService.Search.List([]string{})
+	liveStReg.ChannelId(chID)
+	liveStReg.EventType("live")
+	liveStReg.Type("video")
+	liveSt, err := liveStReg.Do()
 	if err != nil {
 		log.Fatal(err)
-	}*/
+	}
 
-	/*ts := youtubeService.Channels.List([]string{"topicDetails"})
-	ts.Id(chID)
-	tss, err := ts.Do()
-	for i, v := range tss.Items {
-		log.Infof("%v - %s", i, v.Snippet.Title)
-	}*/
-
-	/*for {
-		liveStReg := youtubeService.Search.List([]string{})
-		liveStReg.ChannelId(chID)
-		liveStReg.EventType("live")
-		liveStReg.Type("video")
-		liveSt, err := liveStReg.Do()
+	if liveSt.Items != nil {
+		bl, err := db.Check(liveSt.Items[0].Id.VideoId)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		if liveSt.Items != nil {
-			bl, err := db.Check(liveSt.Items[0].Id.VideoId)
+		if !bl {
+			liveStSnippetReg := youtubeService.Search.List([]string{"snippet"})
+			liveStSnippetReg.ChannelId(chID)
+			liveStSnippetReg.EventType("live")
+			liveStSnippetReg.Type("video")
+			liveStSnippet, err := liveStSnippetReg.Do()
 			if err != nil {
 				log.Fatal(err)
+			} else if liveStSnippet.Items == nil {
+				log.Fatal("empty liveStSnippet.Items")
 			}
 
-			if !bl {
-				liveStSnippetReg := youtubeService.Search.List([]string{"snippet"})
-				liveStSnippetReg.ChannelId(chID)
-				liveStSnippetReg.EventType("live")
-				liveStSnippetReg.Type("video")
-				liveStSnippet, err := liveStSnippetReg.Do()
-				if err != nil {
-					log.Fatal(err)
-				} else if liveStSnippet.Items == nil {
-					log.Fatal("empty liveStSnippet.Items")
-				}
-
-				title := liveStSnippet.Items[0].Snippet.Title
-				text := title + "\n\nyoutube.com/watch?v=" + liveStSnippet.Items[0].Id.VideoId
-				tg.SendNotification(text)
-			}
+			title := liveStSnippet.Items[0].Snippet.Title
+			text := title + "\n\nyoutube.com/watch?v=" + liveStSnippet.Items[0].Id.VideoId
+			tg.SendNotification(text)
 		}
+	}
 
-		time.Sleep(time.Second * 15)
-	}*/
-}
+	time.Sleep(time.Second * 15)
+}*/

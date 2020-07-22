@@ -6,6 +6,7 @@ import (
 	"StreamTelegram/model"
 	"StreamTelegram/mongodb"
 	"StreamTelegram/tgbot"
+	u "StreamTelegram/utility"
 	"go.uber.org/fx"
 	"strconv"
 )
@@ -46,23 +47,17 @@ func NewTGBot(conf *config.Config) *tgbot.TGBot {
 		log.Fatal("empty TOID")
 	}
 	toID, err := strconv.ParseInt(toIDs, 10, 64)
-	if err != nil {
-		log.Fatal("TOID strconv.ParseInt: ", err)
-	}
+	u.Fatal("main.NewTGBot - TOID strconv.ParseInt", err)
 
 	var errorToID int64
 	errorToIDs := conf.GetString("ERRORTOID")
 	if toIDs != "" {
 		errorToID, err = strconv.ParseInt(errorToIDs, 10, 64)
-		if err != nil {
-			log.Fatal("ERRORTOID strconv.ParseInt: ", err)
-		}
+		u.Fatal("main.NewTGBot - ERRORTOID strconv.ParseInt", err)
 	}
 
 	tgBot, err := tgbot.New(conf.GetString("PROXY"), conf.GetString("TOKEN"), toID, errorToID)
-	if err != nil {
-		log.Fatal("tgbot.New: ", err)
-	}
+	u.Fatal("main.NewTGBot - tgbot.New", err)
 
 	return tgBot
 }
