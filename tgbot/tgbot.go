@@ -2,7 +2,6 @@ package tgbot
 
 import (
 	"StreamTelegram/go-log"
-	u "StreamTelegram/utility"
 	"crypto/tls"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -62,7 +61,9 @@ func (bt *TGBot) SendLog(text string) {
 func (tb *TGBot) Start() {
 	uptime := time.Now()
 	updates, err := tb.tgBot.GetUpdatesChan(tb.updateConfig)
-	u.Fatal("tgbot.Start - tgBot.GetUpdatesChan", err)
+	if err != nil {
+		log.Fatal("ERR tgbot.Start - tgBot.GetUpdatesChan: ", err.Error())
+	}
 
 	log.Info("Start tg bot!")
 	for update := range updates {
