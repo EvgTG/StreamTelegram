@@ -14,7 +14,6 @@ import (
 )
 
 //TODO заменить фаталы на одну функцию
-//TODO добавить функцию с фаталами
 //TODO закинуть в цикл
 func start(db *model.Model, tg *tgbot.TGBot, chID, ytAPIkey string) {
 	ctx := context.Background()
