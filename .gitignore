@@ -1,4 +1,4 @@
 vendor
 .vendor-new
 .idea
-.env
+env/.env
