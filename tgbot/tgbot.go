@@ -46,17 +46,17 @@ func New(proxy, token string, toID, errorToID int64) (*TGBot, error) {
 	return &TGBot{tgBot, u, toID, errorToID, 0}, nil
 }
 
-func (bt *TGBot) SendNotification(text string) {
-	msg := tgbotapi.NewMessage(bt.toID, text)
-	bt.tgBot.Send(msg)
+func (tb *TGBot) SendNotification(text string) {
+	msg := tgbotapi.NewMessage(tb.toID, text)
+	tb.tgBot.Send(msg)
 }
 
-func (bt *TGBot) SendLog(text string) {
-	if bt.errorToID == 0 {
+func (tb *TGBot) SendLog(text string) {
+	if tb.errorToID == 0 {
 		return
 	}
-	msg := tgbotapi.NewMessage(bt.errorToID, text)
-	bt.tgBot.Send(msg)
+	msg := tgbotapi.NewMessage(tb.errorToID, text)
+	tb.tgBot.Send(msg)
 }
 
 func (tb *TGBot) Start() {
