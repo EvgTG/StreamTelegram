@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"google.golang.org/api/youtube/v3"
 	"net/http"
 	"net/url"
 	"time"
@@ -16,9 +17,10 @@ type TGBot struct {
 	toID             int64
 	errorToID        int64
 	NumberIterations int
+	youtubeService   *youtube.Service
 }
 
-func New(proxy, token string, toID, errorToID int64) (*TGBot, error) {
+func New(proxy, token string, toID, errorToID int64, youtubeService *youtube.Service) (*TGBot, error) {
 	client := &http.Client{
 		Timeout: time.Second * 60,
 	}
@@ -43,7 +45,7 @@ func New(proxy, token string, toID, errorToID int64) (*TGBot, error) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	return &TGBot{tgBot, u, toID, errorToID, 0}, nil
+	return &TGBot{tgBot, u, toID, errorToID, 0, youtubeService}, nil
 }
 
 func (tb *TGBot) SendNotification(text string) {

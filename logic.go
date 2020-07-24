@@ -4,19 +4,14 @@ import (
 	"StreamTelegram/model"
 	"StreamTelegram/tgbot"
 	u "StreamTelegram/utility"
-	"context"
 	"fmt"
 	"github.com/mmcdole/gofeed"
-	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 	"strings"
 	"time"
 )
 
-func start(db *model.Model, tg *tgbot.TGBot, chID, ytAPIkey string) {
-	ctx := context.Background()
-	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(ytAPIkey))
-	u.FatalTG("main.start - youtube.NewService", tg, err)
+func start(db *model.Model, tg *tgbot.TGBot, chID string, youtubeService *youtube.Service) {
 	fp := gofeed.NewParser()
 	loc, err := time.LoadLocation("Europe/Moscow")
 	u.FatalTG("main.start - time.LoadLocation", tg, err)

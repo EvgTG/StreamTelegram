@@ -7,7 +7,10 @@ import (
 	"StreamTelegram/mongodb"
 	"StreamTelegram/tgbot"
 	u "StreamTelegram/utility"
+	"context"
 	"go.uber.org/fx"
+	"google.golang.org/api/option"
+	"google.golang.org/api/youtube/v3"
 	"strconv"
 )
 
@@ -15,6 +18,7 @@ func New() (app *fx.App) {
 	app = fx.New(
 		fx.Provide(
 			Config,
+			NewYT,
 			NewDB,
 			NewTGBot,
 		),
@@ -41,7 +45,14 @@ func NewDB(conf *config.Config) *model.Model {
 	return model.New(mongodb.NewDB(conf.GetString("NAMEDB")))
 }
 
-func NewTGBot(conf *config.Config) *tgbot.TGBot {
+func NewYT(conf *config.Config) *youtube.Service {
+	ctx := context.Background()
+	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(conf.GetString("YTAPIKEY")))
+	u.Fatal("main.NewYT - youtube.NewService", err)
+	return youtubeService
+}
+
+func NewTGBot(conf *config.Config, youtubeService *youtube.Service) *tgbot.TGBot {
 	toIDs := conf.GetString("TOID")
 	if toIDs == "" {
 		log.Fatal("empty TOID")
@@ -56,13 +67,13 @@ func NewTGBot(conf *config.Config) *tgbot.TGBot {
 		u.Fatal("main.NewTGBot - ERRORTOID strconv.ParseInt", err)
 	}
 
-	tgBot, err := tgbot.New(conf.GetString("PROXY"), conf.GetString("TOKEN"), toID, errorToID)
+	tgBot, err := tgbot.New(conf.GetString("PROXY"), conf.GetString("TOKEN"), toID, errorToID, youtubeService)
 	u.Fatal("main.NewTGBot - tgbot.New", err)
 
 	return tgBot
 }
 
-func Start(db *model.Model, tg *tgbot.TGBot, conf *config.Config) {
+func Start(db *model.Model, tg *tgbot.TGBot, conf *config.Config, youtubeService *youtube.Service) {
 	go tg.Start()
-	start(db, tg, conf.GetString("CHANNELID"), conf.GetString("YTAPIKEY"))
+	start(db, tg, conf.GetString("CHANNELID"), youtubeService)
 }
