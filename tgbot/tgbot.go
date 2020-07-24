@@ -19,6 +19,7 @@ type TGBot struct {
 	uList            []int64
 	NumberIterations int
 	youtubeService   *youtube.Service
+	uptime           time.Time
 }
 
 func New(proxy, token string, toID, errorToID int64, youtubeService *youtube.Service, uList []int64) (*TGBot, error) {
@@ -46,7 +47,16 @@ func New(proxy, token string, toID, errorToID int64, youtubeService *youtube.Ser
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	return &TGBot{tgBot, u, toID, errorToID, uList, 0, youtubeService}, nil
+	return &TGBot{
+		tgBot:            tgBot,
+		updateConfig:     u,
+		toID:             toID,
+		errorToID:        errorToID,
+		uList:            uList,
+		NumberIterations: 0,
+		youtubeService:   youtubeService,
+		uptime:           time.Now(),
+	}, nil
 }
 
 func (tb *TGBot) SendNotification(text string) {
@@ -63,7 +73,6 @@ func (tb *TGBot) SendLog(text string) {
 }
 
 func (tb *TGBot) Start() {
-	uptime := time.Now()
 	updates, err := tb.tgBot.GetUpdatesChan(tb.updateConfig)
 	if err != nil {
 		tb.SendLog("ERR tgbot.Start - tgBot.GetUpdatesChan: " + err.Error())
@@ -82,6 +91,15 @@ func (tb *TGBot) Start() {
 			if !userInList(tb.uList, update.CallbackQuery.Message.Chat.ID) {
 				continue
 			}
+
+			if update.CallbackQuery.Data == "update_status" {
+				text, inlineKeyboard := tb.textStatus()
+				tb.tgBot.Send(tgbotapi.NewEditMessageText(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text))
+				tb.tgBot.Send(tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, inlineKeyboard))
+			}
+
+			tb.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, ""))
+			continue
 		}
 
 		if update.Message == nil {
@@ -95,12 +113,20 @@ func (tb *TGBot) Start() {
 				msg.Text = fmt.Sprintf("Hi!")
 				tb.tgBot.Send(msg)
 			case "status":
-				msg.Text = fmt.Sprintf("Uptime: %s\nNumber of iterations: %v", time.Since(uptime).Round(time.Second), tb.NumberIterations)
+				msg.Text, msg.ReplyMarkup = tb.textStatus()
 				tb.tgBot.Send(msg)
 			}
 			continue
 		}
 	}
+}
+
+func (tb *TGBot) textStatus() (string, tgbotapi.InlineKeyboardMarkup) {
+	text := fmt.Sprintf("Uptime: %s\nNumber of iterations: %v", time.Since(tb.uptime).Round(time.Second), tb.NumberIterations)
+	var buttons []tgbotapi.InlineKeyboardButton
+	buttons = append(buttons, tgbotapi.NewInlineKeyboardButtonData("🔄Update", "update_status"))
+	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(buttons...))
+	return text, inlineKeyboard
 }
 
 func userInList(list []int64, a int64) bool {
