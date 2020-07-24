@@ -98,7 +98,7 @@ func (tb *TGBot) Start() {
 				tb.tgBot.Send(tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, inlineKeyboard))
 			}
 
-			tb.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, ""))
+			tb.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
 			continue
 		}
 
