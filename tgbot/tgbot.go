@@ -63,6 +63,7 @@ func (tb *TGBot) Start() {
 	uptime := time.Now()
 	updates, err := tb.tgBot.GetUpdatesChan(tb.updateConfig)
 	if err != nil {
+		tb.SendLog("ERR tgbot.Start - tgBot.GetUpdatesChan: " + err.Error())
 		log.Fatal("ERR tgbot.Start - tgBot.GetUpdatesChan: ", err.Error())
 	}
 
