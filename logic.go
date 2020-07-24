@@ -61,10 +61,6 @@ func start(db *model.Model, tg *tgbot.TGBot, chID string, youtubeService *youtub
 	}
 }
 
-type Logic struct {
-	CID string
-}
-
 /*ctx := context.Background()
 youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(ytAPIkey))
 if err != nil {

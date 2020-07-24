@@ -16,11 +16,12 @@ type TGBot struct {
 	updateConfig     tgbotapi.UpdateConfig
 	toID             int64
 	errorToID        int64
+	uList            []int64
 	NumberIterations int
 	youtubeService   *youtube.Service
 }
 
-func New(proxy, token string, toID, errorToID int64, youtubeService *youtube.Service) (*TGBot, error) {
+func New(proxy, token string, toID, errorToID int64, youtubeService *youtube.Service, uList []int64) (*TGBot, error) {
 	client := &http.Client{
 		Timeout: time.Second * 60,
 	}
@@ -45,7 +46,7 @@ func New(proxy, token string, toID, errorToID int64, youtubeService *youtube.Ser
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	return &TGBot{tgBot, u, toID, errorToID, 0, youtubeService}, nil
+	return &TGBot{tgBot, u, toID, errorToID, uList, 0, youtubeService}, nil
 }
 
 func (tb *TGBot) SendNotification(text string) {
@@ -71,6 +72,18 @@ func (tb *TGBot) Start() {
 
 	log.Info("Start tg bot!")
 	for update := range updates {
+		if update.Message != nil {
+			if !userInList(tb.uList, update.Message.Chat.ID) {
+				continue
+			}
+		}
+
+		if update.CallbackQuery != nil && update.CallbackQuery.Message != nil && update.CallbackQuery.Message.Chat != nil {
+			if !userInList(tb.uList, update.CallbackQuery.Message.Chat.ID) {
+				continue
+			}
+		}
+
 		if update.Message == nil {
 			continue
 		}
@@ -79,10 +92,22 @@ func (tb *TGBot) Start() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 			switch update.Message.Command() {
 			case "start":
+				msg.Text = fmt.Sprintf("Hi!")
+				tb.tgBot.Send(msg)
+			case "status":
 				msg.Text = fmt.Sprintf("Uptime: %s\nNumber of iterations: %v", time.Since(uptime).Round(time.Second), tb.NumberIterations)
 				tb.tgBot.Send(msg)
 			}
 			continue
 		}
 	}
+}
+
+func userInList(list []int64, a int64) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }

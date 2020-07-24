@@ -12,6 +12,7 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 	"strconv"
+	"strings"
 )
 
 func New() (app *fx.App) {
@@ -55,7 +56,7 @@ func NewYT(conf *config.Config) *youtube.Service {
 func NewTGBot(conf *config.Config, youtubeService *youtube.Service) *tgbot.TGBot {
 	toIDs := conf.GetString("TOID")
 	if toIDs == "" {
-		log.Fatal("empty TOID")
+		log.Fatal("ERR main.NewTGBot - empty TOID")
 	}
 	toID, err := strconv.ParseInt(toIDs, 10, 64)
 	u.Fatal("main.NewTGBot - TOID strconv.ParseInt", err)
@@ -67,7 +68,15 @@ func NewTGBot(conf *config.Config, youtubeService *youtube.Service) *tgbot.TGBot
 		u.Fatal("main.NewTGBot - ERRORTOID strconv.ParseInt", err)
 	}
 
-	tgBot, err := tgbot.New(conf.GetString("PROXY"), conf.GetString("TOKEN"), toID, errorToID, youtubeService)
+	var uList []int64
+	uListL := strings.Split(conf.GetString("USERLIST"), ",")
+	for _, v := range uListL {
+		id, err := strconv.ParseInt(v, 10, 64)
+		u.Fatal("main.NewTGBot - strconv.ParseInt", err)
+		uList = append(uList, id)
+	}
+
+	tgBot, err := tgbot.New(conf.GetString("PROXY"), conf.GetString("TOKEN"), toID, errorToID, youtubeService, uList)
 	u.Fatal("main.NewTGBot - tgbot.New", err)
 
 	return tgBot
