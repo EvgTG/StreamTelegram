@@ -8,6 +8,7 @@ import (
 	"google.golang.org/api/youtube/v3"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -72,7 +73,7 @@ func (tb *TGBot) SendLog(text string) {
 	tb.tgBot.Send(msg)
 }
 
-func (tb *TGBot) Start() {
+func (tb *TGBot) Start(youtubeService *youtube.Service) {
 	updates, err := tb.tgBot.GetUpdatesChan(tb.updateConfig)
 	if err != nil {
 		tb.SendLog("ERR tgbot.Start - tgBot.GetUpdatesChan: " + err.Error())
@@ -115,6 +116,36 @@ func (tb *TGBot) Start() {
 			case "status":
 				msg.Text, msg.ReplyMarkup = tb.textStatus()
 				tb.tgBot.Send(msg)
+			case "search":
+				if update.Message.ReplyToMessage != nil {
+					update.Message.Text = "/search " + update.Message.ReplyToMessage.Text
+				}
+
+				urls := strings.Replace(update.Message.Text, "/search ", "", 1)
+				id := strings.Replace(urls, "https://youtu.be/", "", 1)
+				id = strings.Replace(id, "https://www.youtube.com/watch?v=", "", 1)
+
+				if strings.Contains(id, "&") {
+					id = id[0:strings.Index(id, "&")]
+				}
+
+				video := youtubeService.Videos.List([]string{"snippet"})
+				video.Id(id)
+				videoRes, err := video.Do()
+				if err != nil {
+					msg.Text = fmt.Sprintf("Error youtube request - %v", err.Error())
+					tb.tgBot.Send(msg)
+					continue
+				} else if len(videoRes.Items) == 0 {
+					msg.Text = "Not found"
+					tb.tgBot.Send(msg)
+					continue
+				}
+
+				msg.ParseMode = "markdown"
+				msg.Text = fmt.Sprintf("%v\nID: `%v`\n[URL](https://www.youtube.com/channel/%v),  [RSS](https://www.youtube.com/feeds/videos.xml?channel_id=%v)",
+					videoRes.Items[0].Snippet.ChannelTitle, videoRes.Items[0].Snippet.ChannelId, videoRes.Items[0].Snippet.ChannelId, videoRes.Items[0].Snippet.ChannelId)
+				tb.tgBot.Send(msg)
 			}
 			continue
 		}
@@ -123,8 +154,7 @@ func (tb *TGBot) Start() {
 
 func (tb *TGBot) textStatus() (string, tgbotapi.InlineKeyboardMarkup) {
 	text := fmt.Sprintf("Uptime: %s\nNumber of iterations: %v", time.Since(tb.uptime).Round(time.Second), tb.NumberIterations)
-	var buttons []tgbotapi.InlineKeyboardButton
-	buttons = append(buttons, tgbotapi.NewInlineKeyboardButtonData("🔄Update", "update_status"))
+	buttons := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("🔄Update", "update_status")}
 	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(buttons...))
 	return text, inlineKeyboard
 }

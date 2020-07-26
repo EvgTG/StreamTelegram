@@ -83,6 +83,6 @@ func NewTGBot(conf *config.Config, youtubeService *youtube.Service) *tgbot.TGBot
 }
 
 func Start(db *model.Model, tg *tgbot.TGBot, conf *config.Config, youtubeService *youtube.Service) {
-	go tg.Start()
+	go tg.Start(youtubeService)
 	start(db, tg, conf.GetString("CHANNELID"), youtubeService)
 }
