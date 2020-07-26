@@ -9,5 +9,3 @@ func main() {
 	}
 	defer app.Stop(context.Background())
 }
-
-//TODO добавить поиск id по нику
