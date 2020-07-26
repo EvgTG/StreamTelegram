@@ -153,7 +153,15 @@ func (tb *TGBot) Start(youtubeService *youtube.Service) {
 }
 
 func (tb *TGBot) textStatus() (string, tgbotapi.InlineKeyboardMarkup) {
-	text := fmt.Sprintf("Uptime: %s\nNumber of iterations: %v", time.Since(tb.uptime).Round(time.Second), tb.NumberIterations)
+	tm := time.Since(tb.uptime).Round(time.Second)
+	var hours int
+	var hoursStr string
+	for tm.Hours() > 24 {
+		tm -= time.Hour * 24
+		hours++
+		hoursStr = fmt.Sprintf("%vd", hours)
+	}
+	text := fmt.Sprintf("Uptime: %s\nNumber of iterations: %v", hoursStr+tm.String(), tb.NumberIterations)
 	buttons := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("🔄Update", "update_status")}
 	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(buttons...))
 	return text, inlineKeyboard
