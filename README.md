@@ -10,3 +10,6 @@ Notifications about YouTube streams in Telegram
 * ERRORTOID (chat with logs)
 * YTAPIKEY (youtube api key)
 * CHANNELID (youtube channel id. For example UC2_vpnza621Sa0cf_xhqJ8Q)
+## Telegram bot commands
+* status - uptime & number of RSS check iterations
+* search - search channel id by the link to the video
