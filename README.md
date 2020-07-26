@@ -12,4 +12,4 @@ Notifications about YouTube streams in Telegram
 * CHANNELID (youtube channel id. For example UC2_vpnza621Sa0cf_xhqJ8Q)
 ## Telegram bot commands
 * status - uptime & number of RSS check iterations
-* search - search channel id by the link to the video
+* search - search channel id by the link to the video ("/seach url" or "/seach" response to a link)
