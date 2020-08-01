@@ -3,14 +3,10 @@ package main
 import (
 	"StreamTelegram/go-config"
 	"StreamTelegram/go-log"
+	"StreamTelegram/mainpac"
 	"StreamTelegram/model"
 	"StreamTelegram/mongodb"
-	"StreamTelegram/tgbot"
-	u "StreamTelegram/utility"
-	"context"
 	"go.uber.org/fx"
-	"google.golang.org/api/option"
-	"google.golang.org/api/youtube/v3"
 	"strconv"
 	"strings"
 )
@@ -19,9 +15,8 @@ func New() (app *fx.App) {
 	app = fx.New(
 		fx.Provide(
 			Config,
-			NewYT,
 			NewDB,
-			NewTGBot,
+			NewService,
 		),
 
 		fx.Invoke(
@@ -46,43 +41,48 @@ func NewDB(conf *config.Config) *model.Model {
 	return model.New(mongodb.NewDB(conf.GetString("NAMEDB")))
 }
 
-func NewYT(conf *config.Config) *youtube.Service {
-	ctx := context.Background()
-	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(conf.GetString("YTAPIKEY")))
-	u.Fatal("main.NewYT - youtube.NewService", err)
-	return youtubeService
-}
-
-func NewTGBot(conf *config.Config, youtubeService *youtube.Service) *tgbot.TGBot {
+func NewService(conf *config.Config, db *model.Model) *mainpac.Service {
+	//TODO сделать лист, добавить уведомление и управление через тг
 	toIDs := conf.GetString("TOID")
 	if toIDs == "" {
 		log.Fatal("ERR main.NewTGBot - empty TOID")
 	}
 	toID, err := strconv.ParseInt(toIDs, 10, 64)
-	u.Fatal("main.NewTGBot - TOID strconv.ParseInt", err)
+	mainpac.Fatal("main.NewService - TOID strconv.ParseInt()", err)
 
 	var errorToID int64
 	errorToIDs := conf.GetString("ERRORTOID")
-	if toIDs != "" {
+	if errorToIDs != "" {
 		errorToID, err = strconv.ParseInt(errorToIDs, 10, 64)
-		u.Fatal("main.NewTGBot - ERRORTOID strconv.ParseInt", err)
+		mainpac.Fatal("main.NewService - ERRORTOID strconv.ParseInt()", err)
 	}
 
-	var uList []int64
-	uListL := strings.Split(conf.GetString("USERLIST"), ",")
-	for _, v := range uListL {
+	var userList []int64
+	userListL := strings.Split(conf.GetString("USERLIST"), ",")
+	for _, v := range userListL {
 		id, err := strconv.ParseInt(v, 10, 64)
-		u.Fatal("main.NewTGBot - strconv.ParseInt", err)
-		uList = append(uList, id)
+		mainpac.Fatal("main.NewService - strconv.ParseInt()", err)
+		userList = append(userList, id)
 	}
 
-	tgBot, err := tgbot.New(conf.GetString("PROXY"), conf.GetString("TOKEN"), toID, errorToID, youtubeService, uList)
-	u.Fatal("main.NewTGBot - tgbot.New", err)
+	cfg := mainpac.InitConfig{
+		Proxy:      conf.GetString("PROXY"),
+		TgApiToken: conf.GetString("TOKEN"),
+		TOID:       toID,
+		ErrorToID:  errorToID,
+		UserList:   userList,
+		ChannelID:  conf.GetString("CHANNELID"),
+		YTApiKey:   conf.GetString("YTAPIKEY"),
+	}
 
-	return tgBot
+	service, err := mainpac.New(cfg, db)
+	if err != nil {
+		mainpac.Fatal("main.NewService - mainpac.New()", err)
+	}
+	return service
 }
 
-func Start(db *model.Model, tg *tgbot.TGBot, conf *config.Config, youtubeService *youtube.Service) {
-	go tg.Start(youtubeService)
-	start(db, tg, conf.GetString("CHANNELID"), youtubeService)
+func Start(service *mainpac.Service) {
+	go service.StartTG()
+	service.StartYT()
 }

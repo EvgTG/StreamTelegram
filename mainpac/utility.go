@@ -1,8 +1,7 @@
-package utility
+package mainpac
 
 import (
 	"StreamTelegram/go-log"
-	"StreamTelegram/tgbot"
 	"fmt"
 )
 
@@ -12,11 +11,11 @@ func Fatal(text string, err error) {
 	}
 }
 
-func FatalTG(text string, tg *tgbot.TGBot, err error) {
+func (s Service) FatalTG(text string, err error) {
 	if err != nil {
 		text := fmt.Sprintf("ERR %v: %v", text, err)
 
-		tg.SendLog(text)
+		s.tg.SendLog(text)
 		log.Fatal(text)
 	}
 }

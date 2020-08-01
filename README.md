@@ -4,6 +4,7 @@ Notifications about YouTube streams in Telegram
 * CONFIG_NAME
 * LOGLVL (panic, fatal, error, warn or warning, info, debug, trace)
 * NAMEDB 
+* PROXY (telegram bot, socks5://login:pass@ip:port)
 * TOKEN (telegram bot api token)
 * USERLIST (user IDs, "id,id,id")
 * TOID (chat where messages will be sent)
