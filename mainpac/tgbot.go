@@ -96,6 +96,19 @@ func (s *Service) StartTG() {
 				msg.ParseMode = "markdown"
 				msg.Text = s.tg.textRSS(&s.yt.lastRSS, s.loc)
 				s.tg.tgBot.Send(msg)
+			case "getrss":
+				id := update.Message.Text[8:len(update.Message.Text)]
+				feed, err := s.tg.GetRSSFeed(id)
+				if err != nil {
+					msg.Text = "Failed to get"
+					s.tg.tgBot.Send(msg)
+					s.tg.SendLog(err.Error())
+				}
+				msg.ParseMode = "markdown"
+				msg.Text = s.tg.textRSS(feed, s.loc)
+				buttons1 := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("🗞Update", "get_rss"+id), tgbotapi.NewInlineKeyboardButtonData("❌Delete", "delete")}
+				msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(buttons1)
+				s.tg.tgBot.Send(msg)
 			case "search":
 				if update.Message.ReplyToMessage != nil {
 					update.Message.Text = "/search " + update.Message.ReplyToMessage.Text
