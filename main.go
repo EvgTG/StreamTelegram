@@ -9,3 +9,9 @@ func main() {
 	}
 	defer app.Stop(context.Background())
 }
+
+/*
+TODO:
+команды телеги: channel ID( + кнопка  на изменение, в дальнейшем несколько каналов)
+перебрать ошибки
+*/

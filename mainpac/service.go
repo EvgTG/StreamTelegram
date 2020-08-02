@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/mmcdole/gofeed"
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 	"net/http"
@@ -14,9 +15,10 @@ import (
 )
 
 type Service struct {
-	tg *tg
-	yt *yt
-	db *model.Model
+	tg  *tg
+	yt  *yt
+	db  *model.Model
+	loc *time.Location
 }
 
 type tg struct {
@@ -34,6 +36,7 @@ type yt struct {
 	channelID string
 	stop      int8
 	stopch    chan bool
+	lastRSS   gofeed.Feed
 }
 
 type InitConfig struct {
@@ -78,6 +81,9 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 		return nil, fmt.Errorf("mainpac.New - youtube.NewService(): %s", err)
 	}
 
+	loc, err := time.LoadLocation("Europe/Moscow")
+	Fatal("StartYT - time.LoadLocation()", err)
+
 	return &Service{
 		tg: &tg{
 			tgBot:            tgBot,
@@ -94,6 +100,7 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 			stop:      0,
 			stopch:    make(chan bool),
 		},
-		db: db,
+		db:  db,
+		loc: loc,
 	}, nil
 }
