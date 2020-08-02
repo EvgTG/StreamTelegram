@@ -1,9 +1,9 @@
 # StreamTelegram
 Notifications about YouTube streams in Telegram
 ## Environment
-* CONFIG_NAME
+* CONFIG_NAME (env file)
 * LOGLVL (panic, fatal, error, warn or warning, info, debug, trace)
-* NAMEDB 
+* NAMEDB (Database name)
 * PROXY (telegram bot, socks5://login:pass@ip:port)
 * TOKEN (telegram bot api token)
 * USERLIST (user IDs, "id,id,id")
@@ -14,3 +14,10 @@ Notifications about YouTube streams in Telegram
 ## Telegram bot commands
 * status - uptime & number of RSS check iterations
 * search - search channel id by the link to the video ("/seach url" or "/seach" response to a link)
+* lastrss - last RSS received
+* getrss - getting an rss feed by channel id
+  ### BotFather commands
+status - uptime & N iterations  
+search - [URL] search channel  
+lastrss - last RSS received  
+getrss - [channel ID] get rss feed
