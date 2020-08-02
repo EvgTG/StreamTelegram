@@ -32,6 +32,8 @@ type tg struct {
 type yt struct {
 	yts       *youtube.Service
 	channelID string
+	stop      int8
+	stopch    chan bool
 }
 
 type InitConfig struct {
@@ -42,11 +44,6 @@ type InitConfig struct {
 }
 
 func New(cfg InitConfig, db *model.Model) (*Service, error) {
-	service := Service{
-		tg: &tg{},
-		yt: &yt{},
-		db: nil,
-	}
 	var err error
 
 	//Telegram
@@ -64,33 +61,39 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 		}
 	}
 
-	service.tg.tgBot, err = tgbotapi.NewBotAPIWithClient(cfg.TgApiToken, client)
+	tgBot, err := tgbotapi.NewBotAPIWithClient(cfg.TgApiToken, client)
 	if err != nil {
 		return nil, fmt.Errorf("mainpac.New - tgbotapi.NewBotAPIWithClient(): %s", err)
 	}
 
-	service.tg.tgBot.Debug = false
+	tgBot.Debug = false
 
-	service.tg.updateConfig = tgbotapi.NewUpdate(0)
-	service.tg.updateConfig.Timeout = 60
-
-	service.tg.toID = cfg.TOID
-	service.tg.errorToID = cfg.ErrorToID
-	service.tg.userList = cfg.UserList
-	service.tg.numberIterations = 0
-	service.tg.uptime = time.Now()
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
 
 	//YouTube
 	ctx := context.Background()
-	service.yt.yts, err = youtube.NewService(ctx, option.WithAPIKey(cfg.YTApiKey))
+	yts, err := youtube.NewService(ctx, option.WithAPIKey(cfg.YTApiKey))
 	if err != nil {
 		return nil, fmt.Errorf("mainpac.New - youtube.NewService(): %s", err)
 	}
 
-	service.yt.channelID = cfg.ChannelID
-
-	//DB
-	service.db = db
-
-	return &service, nil
+	return &Service{
+		tg: &tg{
+			tgBot:            tgBot,
+			updateConfig:     u,
+			toID:             cfg.TOID,
+			errorToID:        cfg.ErrorToID,
+			userList:         cfg.UserList,
+			numberIterations: 0,
+			uptime:           time.Now(),
+		},
+		yt: &yt{
+			yts:       yts,
+			channelID: cfg.ChannelID,
+			stop:      0,
+			stopch:    make(chan bool),
+		},
+		db: db,
+	}, nil
 }

@@ -42,7 +42,6 @@ func NewDB(conf *config.Config) *model.Model {
 }
 
 func NewService(conf *config.Config, db *model.Model) *mainpac.Service {
-	//TODO сделать лист, добавить уведомление и управление через тг
 	toIDs := conf.GetString("TOID")
 	if toIDs == "" {
 		log.Fatal("ERR main.NewTGBot - empty TOID")

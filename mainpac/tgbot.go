@@ -25,13 +25,29 @@ func (s *Service) StartTG() {
 				continue
 			}
 
-			if update.CallbackQuery.Data == "update_status" {
-				text, inlineKeyboard := s.tg.textStatus()
+			switch update.CallbackQuery.Data {
+			case "update_status":
+				text, inlineKeyboard := s.tg.textStatus(s.yt.stop > 0)
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageText(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text))
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, inlineKeyboard))
+				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
+			case "start":
+				if s.yt.stop == 2 {
+					s.yt.stopch <- true
+				}
+				s.yt.stop = 0
+				text, inlineKeyboard := s.tg.textStatus(s.yt.stop > 0)
+				s.tg.tgBot.Send(tgbotapi.NewEditMessageText(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text))
+				s.tg.tgBot.Send(tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, inlineKeyboard))
+				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Ok"))
+			case "stop":
+				s.yt.stop = 1
+				text, inlineKeyboard := s.tg.textStatus(s.yt.stop > 0)
+				s.tg.tgBot.Send(tgbotapi.NewEditMessageText(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text))
+				s.tg.tgBot.Send(tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, inlineKeyboard))
+				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Ok"))
 			}
 
-			s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
 			continue
 		}
 
@@ -46,7 +62,7 @@ func (s *Service) StartTG() {
 				msg.Text = fmt.Sprintf("Hi!")
 				s.tg.tgBot.Send(msg)
 			case "status":
-				msg.Text, msg.ReplyMarkup = s.tg.textStatus()
+				msg.Text, msg.ReplyMarkup = s.tg.textStatus(s.yt.stop > 0)
 				s.tg.tgBot.Send(msg)
 			case "search":
 				if update.Message.ReplyToMessage != nil {
@@ -97,7 +113,7 @@ func (tg *tg) SendLog(text string) {
 	tg.tgBot.Send(msg)
 }
 
-func (tg *tg) textStatus() (string, tgbotapi.InlineKeyboardMarkup) {
+func (tg *tg) textStatus(stop bool) (string, tgbotapi.InlineKeyboardMarkup) {
 	tm := time.Since(tg.uptime).Round(time.Second)
 	var hours int
 	var hoursStr string
@@ -106,9 +122,10 @@ func (tg *tg) textStatus() (string, tgbotapi.InlineKeyboardMarkup) {
 		hours++
 		hoursStr = fmt.Sprintf("%vd", hours)
 	}
-	text := fmt.Sprintf("Uptime: %s\nNumber of iterations: %v", hoursStr+tm.String(), tg.numberIterations)
-	buttons := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("🔄Update", "update_status")}
-	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(buttons...))
+	text := fmt.Sprintf("Uptime: %s\nPause: %v\nNumber of iterations: %v", hoursStr+tm.String(), stop, tg.numberIterations)
+	buttons1 := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("🔄Update", "update_status")}
+	buttons2 := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("▶️", "start"), tgbotapi.NewInlineKeyboardButtonData("⏸", "stop")}
+	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(buttons1, buttons2)
 	return text, inlineKeyboard
 }
 
