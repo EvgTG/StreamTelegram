@@ -150,8 +150,10 @@ func (s *Service) StartTG() {
 }
 
 func (tg *tg) SendNotification(text string) {
-	msg := tgbotapi.NewMessage(tg.toID, text)
-	tg.tgBot.Send(msg)
+	for _, id := range tg.toID {
+		msg := tgbotapi.NewMessage(id, text)
+		tg.tgBot.Send(msg)
+	}
 }
 
 func (tg *tg) SendLog(text string) {

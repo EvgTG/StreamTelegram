@@ -15,16 +15,17 @@ import (
 )
 
 type Service struct {
-	tg  *tg
-	yt  *yt
-	db  *model.Model
-	loc *time.Location
+	tg      *tg
+	yt      *yt
+	db      *model.Model
+	loc     *time.Location
+	envVars envVara
 }
 
 type tg struct {
 	tgBot            *tgbotapi.BotAPI
 	updateConfig     tgbotapi.UpdateConfig
-	toID             int64
+	toID             []int64
 	errorToID        int64
 	userList         []int64
 	numberIterations int
@@ -41,9 +42,14 @@ type yt struct {
 
 type InitConfig struct {
 	Proxy, TgApiToken   string //tgBot
-	TOID, ErrorToID     int64
+	TOID                []int64
+	ErrorToID           int64
 	UserList            []int64
 	ChannelID, YTApiKey string //yt
+}
+
+type envVara struct {
+	toID []int64
 }
 
 func New(cfg InitConfig, db *model.Model) (*Service, error) {
@@ -82,9 +88,9 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 	}
 
 	loc, err := time.LoadLocation("Europe/Moscow")
-	Fatal("StartYT - time.LoadLocation()", err)
+	Fatal("mainpac.New - time.LoadLocation()", err)
 
-	return &Service{
+	service := &Service{
 		tg: &tg{
 			tgBot:            tgBot,
 			updateConfig:     u,
@@ -102,5 +108,17 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 		},
 		db:  db,
 		loc: loc,
-	}, nil
+		envVars: envVara{
+			toID: cfg.TOID,
+		},
+	}
+
+	st := model.Settings{}
+	err = db.GetLs(&st)
+	Fatal("mainpac.New - db.GetLs()", err)
+	if st.DBPriority.ToIDbl {
+		service.tg.toID = st.DBPriority.ToID
+	}
+
+	return service, nil
 }

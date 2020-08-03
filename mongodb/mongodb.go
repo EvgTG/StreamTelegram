@@ -10,9 +10,9 @@ import (
 )
 
 type Mong struct {
-	Mongo   *mongo.Client
-	NameCol string
-	VIDL    model.VideoIDList
+	Mongo    *mongo.Client
+	NameCol  string
+	Settings model.Settings
 }
 
 func NewDB(nameCol string) *Mong {
@@ -28,11 +28,13 @@ func NewDB(nameCol string) *Mong {
 
 	log.Info("Connected to MongoDB!")
 
-	Mong := Mong{client, nameCol, model.VideoIDList{}}
+	Mong := Mong{client, nameCol, model.Settings{}}
 
-	err = Mong.GetLs(&Mong.VIDL)
+	err = Mong.Mongo.Database(Mong.NameCol).Collection("Settings").FindOne(context.TODO(), bson.D{{}}).Decode(&Mong.Settings)
 	if err != nil {
-		log.Fatal(err)
+		if err.Error() != "mongo: no documents in result" {
+			log.Fatal(err)
+		}
 	}
 
 	return &Mong
@@ -41,39 +43,39 @@ func NewDB(nameCol string) *Mong {
 // true  - есть в базе, идем дальше
 // false - новый стрим, добавляем в базу
 func (m *Mong) Check(id string) (bool, error) {
-	for _, a := range m.VIDL.VideoIDs {
+	for _, a := range m.Settings.VideoIDs {
 		if id == a {
 			return true, nil
 		}
 	}
 
-	if len(m.VIDL.VideoIDs) >= 50 {
-		m.VIDL.VideoIDs = append(m.VIDL.VideoIDs[1:50], id)
+	if len(m.Settings.VideoIDs) >= 50 {
+		m.Settings.VideoIDs = append(m.Settings.VideoIDs[1:50], id)
 	} else {
-		m.VIDL.VideoIDs = append(m.VIDL.VideoIDs, id)
+		m.Settings.VideoIDs = append(m.Settings.VideoIDs, id)
 	}
 
-	err := m.SetLs(&m.VIDL)
+	err := m.SetLs(&m.Settings)
 	return false, err
 }
 
-func (m *Mong) GetLs(ls *model.VideoIDList) error {
-	err := m.Mongo.Database(m.NameCol).Collection("VideoIDList").FindOne(context.TODO(), bson.D{{}}).Decode(&ls)
-	if err != nil {
-		if err.Error() == "mongo: no documents in result" {
-			return nil
-		}
-	}
-	return err
+func (m *Mong) GetLs(ls *model.Settings) error {
+	lss := m.Settings
+	ls = &lss
+	return nil
 }
 
-func (m *Mong) SetLs(ls *model.VideoIDList) error {
-	err := m.Mongo.Database(m.NameCol).Collection("VideoIDList").FindOneAndReplace(context.TODO(), bson.D{{}}, ls).Err()
+func (m *Mong) SetLs(ls *model.Settings) error {
+	err := m.Mongo.Database(m.NameCol).Collection("Settings").FindOneAndReplace(context.TODO(), bson.D{{}}, ls).Err()
 
 	if err != nil {
 		if err.Error() == "mongo: no documents in result" {
-			_, err = m.Mongo.Database(m.NameCol).Collection("VideoIDList").InsertOne(context.TODO(), ls)
+			_, err = m.Mongo.Database(m.NameCol).Collection("Settings").InsertOne(context.TODO(), ls)
 		}
+	}
+
+	if err == nil {
+		m.Settings = *ls
 	}
 
 	return err

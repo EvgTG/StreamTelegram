@@ -1,8 +1,8 @@
 package model
 
 type db interface {
-	GetLs(ls *VideoIDList) error
-	SetLs(ls *VideoIDList) error
+	GetLs(ls *Settings) error
+	SetLs(ls *Settings) error
 	Check(id string) (bool, error)
 }
 
@@ -16,11 +16,11 @@ func New(db db) *Model {
 	}
 }
 
-func (m *Model) GetLs(ls *VideoIDList) error {
+func (m *Model) GetLs(ls *Settings) error {
 	return m.db.GetLs(ls)
 }
 
-func (m *Model) SetLs(ls *VideoIDList) error {
+func (m *Model) SetLs(ls *Settings) error {
 	return m.db.SetLs(ls)
 }
 

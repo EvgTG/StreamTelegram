@@ -42,26 +42,36 @@ func NewDB(conf *config.Config) *model.Model {
 }
 
 func NewService(conf *config.Config, db *model.Model) *mainpac.Service {
-	toIDs := conf.GetString("TOID")
-	if toIDs == "" {
+	var err error
+	var toID []int64
+	toIDs := strings.Split(conf.GetString("TOID"), ",")
+	for _, v := range toIDs {
+		id, err := strconv.ParseInt(v, 10, 64)
+		mainpac.Fatal("main.NewService - USERLIST strconv.ParseInt()", err)
+		toID = append(toID, id)
+	}
+	if len(toID) == 0 {
 		log.Fatal("ERR main.NewTGBot - empty TOID")
 	}
-	toID, err := strconv.ParseInt(toIDs, 10, 64)
-	mainpac.Fatal("main.NewService - TOID strconv.ParseInt()", err)
 
 	var errorToID int64
 	errorToIDs := conf.GetString("ERRORTOID")
 	if errorToIDs != "" {
 		errorToID, err = strconv.ParseInt(errorToIDs, 10, 64)
 		mainpac.Fatal("main.NewService - ERRORTOID strconv.ParseInt()", err)
+	} else {
+		log.Info("ERR main.NewTGBot - empty ERRORTOID")
 	}
 
 	var userList []int64
 	userListL := strings.Split(conf.GetString("USERLIST"), ",")
 	for _, v := range userListL {
 		id, err := strconv.ParseInt(v, 10, 64)
-		mainpac.Fatal("main.NewService - strconv.ParseInt()", err)
+		mainpac.Fatal("main.NewService - USERLIST strconv.ParseInt()", err)
 		userList = append(userList, id)
+	}
+	if len(userList) == 0 {
+		log.Fatal("main.NewService - empty USERLIST")
 	}
 
 	cfg := mainpac.InitConfig{
