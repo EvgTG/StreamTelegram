@@ -19,7 +19,7 @@ type Service struct {
 	yt      *yt
 	db      *model.Model
 	loc     *time.Location
-	envVars envVara
+	envVars envVars
 }
 
 type tg struct {
@@ -48,7 +48,7 @@ type InitConfig struct {
 	ChannelID, YTApiKey string //yt
 }
 
-type envVara struct {
+type envVars struct {
 	toID []int64
 }
 
@@ -108,7 +108,7 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 		},
 		db:  db,
 		loc: loc,
-		envVars: envVara{
+		envVars: envVars{
 			toID: cfg.TOID,
 		},
 	}
