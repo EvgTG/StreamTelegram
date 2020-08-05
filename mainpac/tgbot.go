@@ -214,6 +214,9 @@ func (s *Service) StartTG() {
 				buttons1 := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("🗞Update", "get_rss"+id), tgbotapi.NewInlineKeyboardButtonData("❌Delete", "delete")}
 				msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(buttons1)
 				s.tg.tgBot.Send(msg)
+			case "settings":
+				msg.Text = "/toid - edit targets for notifications"
+				s.tg.tgBot.Send(msg)
 			case "toid":
 				s.tg.toIDMes(s.db, update.Message.Chat.ID)
 			case "search":

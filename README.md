@@ -16,8 +16,11 @@ Notifications about YouTube streams in Telegram
 * search - search channel id by the link to the video ("/seach url" or "/seach" response to a link)
 * lastrss - last RSS received
 * getrss - getting an rss feed by channel id
+* settings - settings
+* toid - edit targets for notifications 
   ### BotFather commands
 status - uptime & N iterations  
 search - [URL] search channel  
 lastrss - last RSS received  
-getrss - [channel ID] get rss feed
+getrss - [channel ID] get rss feed  
+settings - settings
