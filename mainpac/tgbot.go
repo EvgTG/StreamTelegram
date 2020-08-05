@@ -86,7 +86,7 @@ func (s *Service) StartTG() {
 
 			switch update.CallbackQuery.Data {
 			case "update_status":
-				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0)
+				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0, s.yt.lastTime)
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageText(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text))
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, inlineKeyboard))
 				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
@@ -95,13 +95,13 @@ func (s *Service) StartTG() {
 					s.yt.stopch <- true
 				}
 				s.yt.stop = 0
-				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0)
+				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0, s.yt.lastTime)
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageText(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text))
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, inlineKeyboard))
 				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Ok"))
 			case "stop":
 				s.yt.stop = 1
-				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0)
+				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0, s.yt.lastTime)
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageText(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text))
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, inlineKeyboard))
 				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Ok"))
@@ -194,7 +194,7 @@ func (s *Service) StartTG() {
 				msg.Text = fmt.Sprintf("Hi!")
 				s.tg.tgBot.Send(msg)
 			case "status":
-				msg.Text, msg.ReplyMarkup = s.tg.statusMes(s.yt.stop > 0)
+				msg.Text, msg.ReplyMarkup = s.tg.statusMes(s.yt.stop > 0, s.yt.lastTime)
 				s.tg.tgBot.Send(msg)
 			case "lastrss":
 				msg.ParseMode = "markdown"
@@ -306,7 +306,7 @@ func (tg *tg) SendLog(text string) {
 	tg.tgBot.Send(msg)
 }
 
-func (tg *tg) statusMes(stop bool) (string, tgbotapi.InlineKeyboardMarkup) {
+func (tg *tg) statusMes(stop bool, lastTm time.Time) (string, tgbotapi.InlineKeyboardMarkup) {
 	tm := time.Since(tg.uptime).Round(time.Second)
 	var hours int
 	var hoursStr string
@@ -315,7 +315,7 @@ func (tg *tg) statusMes(stop bool) (string, tgbotapi.InlineKeyboardMarkup) {
 		hours++
 		hoursStr = fmt.Sprintf("%vd", hours)
 	}
-	text := fmt.Sprintf("Uptime: %s\nPause: %v\nNumber of iterations: %v", hoursStr+tm.String(), stop, tg.numberIterations)
+	text := fmt.Sprintf("Uptime: %s\nPause: %v\nNumber of iterations: %v\nTime of last check RSS:\n%v", hoursStr+tm.String(), stop, tg.numberIterations, lastTm.Format("01.02 15:04 -07:00 MST"))
 	buttons1 := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("🔄Update", "update_status")}
 	buttons2 := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("▶️", "start"), tgbotapi.NewInlineKeyboardButtonData("⏸", "stop")}
 	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(buttons1, buttons2)

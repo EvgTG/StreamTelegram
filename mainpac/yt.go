@@ -54,6 +54,7 @@ func (s *Service) StartYT() {
 		}
 
 		s.tg.numberIterations++
+		s.yt.lastTime = time.Now()
 		time.Sleep(time.Minute * 5)
 		if s.yt.stop == 1 {
 			s.yt.stop = 2

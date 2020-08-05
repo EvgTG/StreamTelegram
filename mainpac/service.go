@@ -39,6 +39,7 @@ type yt struct {
 	stop      int8
 	stopch    chan bool
 	lastRSS   gofeed.Feed
+	lastTime  time.Time
 }
 
 type InitConfig struct {
@@ -107,6 +108,8 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 			channelID: cfg.ChannelID,
 			stop:      0,
 			stopch:    make(chan bool),
+			lastRSS:   gofeed.Feed{},
+			lastTime:  time.Time{},
 		},
 		db:  db,
 		loc: loc,
