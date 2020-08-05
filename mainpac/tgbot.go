@@ -6,12 +6,15 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/mmcdole/gofeed"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
 func (s *Service) StartTG() {
+	rgxVID := regexp.MustCompile(`[A-Za-z0-9_-]{11}`)
+
 	updates, err := s.tg.tgBot.GetUpdatesChan(s.tg.updateConfig)
 	s.FatalTG("StartTG - tgBot.GetUpdatesChan()", err)
 
@@ -226,7 +229,11 @@ func (s *Service) StartTG() {
 					id = id[0:strings.Index(id, "&")]
 				}
 
-				//TODO приделать проверку id
+				if !rgxVID.MatchString(id) {
+					msg.Text = "Invalid video id"
+					s.tg.tgBot.Send(msg)
+					continue
+				}
 
 				video := s.yt.yts.Videos.List([]string{"snippet"})
 				video.Id(id)
