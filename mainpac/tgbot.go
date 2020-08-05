@@ -14,6 +14,7 @@ import (
 
 func (s *Service) StartTG() {
 	rgxVID := regexp.MustCompile(`[A-Za-z0-9_-]{11}`)
+	rgxChID := regexp.MustCompile(`UC[A-Za-z0-9_-]{22}`)
 
 	updates, err := s.tg.tgBot.GetUpdatesChan(s.tg.updateConfig)
 	s.FatalTG("StartTG - tgBot.GetUpdatesChan()", err)
@@ -201,7 +202,12 @@ func (s *Service) StartTG() {
 				msg.Text = s.tg.textRSS(&s.yt.lastRSS, s.loc)
 				s.tg.tgBot.Send(msg)
 			case "getrss":
-				id := update.Message.Text[8:len(update.Message.Text)]
+				id := strings.ReplaceAll(update.Message.Text[7:len(update.Message.Text)], " ", "")
+				if !rgxChID.MatchString(id) {
+					msg.Text = "Invalid id"
+					s.tg.tgBot.Send(msg)
+					continue
+				}
 				feed, err := s.tg.GetRSSFeed(id)
 				if err != nil {
 					msg.Text = "Failed to get"
