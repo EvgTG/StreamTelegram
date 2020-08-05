@@ -59,10 +59,8 @@ func (m *Mong) Check(id string) (bool, error) {
 	return false, err
 }
 
-func (m *Mong) GetLs(ls *model.Settings) error {
-	lss := m.Settings
-	ls = &lss
-	return nil
+func (m *Mong) GetLs() model.Settings {
+	return m.Settings
 }
 
 func (m *Mong) SetLs(ls *model.Settings) error {

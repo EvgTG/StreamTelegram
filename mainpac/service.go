@@ -30,6 +30,7 @@ type tg struct {
 	userList         []int64
 	numberIterations int
 	uptime           time.Time
+	callbackQuery    string
 }
 
 type yt struct {
@@ -99,6 +100,7 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 			userList:         cfg.UserList,
 			numberIterations: 0,
 			uptime:           time.Now(),
+			callbackQuery:    "",
 		},
 		yt: &yt{
 			yts:       yts,
@@ -113,9 +115,7 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 		},
 	}
 
-	st := model.Settings{}
-	err = db.GetLs(&st)
-	Fatal("mainpac.New - db.GetLs()", err)
+	st := db.GetLs()
 	if st.DBPriority.ToIDbl {
 		service.tg.toID = st.DBPriority.ToID
 	}

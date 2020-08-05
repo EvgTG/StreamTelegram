@@ -2,9 +2,11 @@ package mainpac
 
 import (
 	"StreamTelegram/go-log"
+	"StreamTelegram/model"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/mmcdole/gofeed"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -21,6 +23,59 @@ func (s *Service) StartTG() {
 			}
 		}
 
+		if s.tg.callbackQuery != "" && update.Message != nil && update.Message.Chat != nil { //st_edit_chiddelid_***
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+			if strings.Contains(s.tg.callbackQuery, "st_") {
+				if strings.Contains(s.tg.callbackQuery, "edit_") {
+					if strings.Contains(s.tg.callbackQuery, "chid") {
+						var ints []int64
+						var errbl bool
+
+						strs := strings.Split(update.Message.Text, ",")
+						deleteSpaces(&strs)
+						for _, v := range strs {
+							a, err := strconv.ParseInt(v, 10, 64)
+							if err != nil {
+								errbl = true
+							}
+							ints = append(ints, a)
+						}
+
+						if errbl {
+							msg.Text = "Invalid formatting. Try again"
+							s.tg.tgBot.Send(msg)
+							continue
+						}
+
+						s.tg.toID = ints
+						st := s.db.GetLs()
+						st.DBPriority.ToID = ints
+						st.DBPriority.ToIDbl = true
+						err := s.db.SetLs(&st)
+						s.FatalTG("StartTG - s.db.SetLs()", err)
+
+						s.tg.callbackQuery = s.tg.callbackQuery[12:len(s.tg.callbackQuery)]
+						msg.Text = "Changed"
+						mes, err := s.tg.tgBot.Send(msg)
+						if err == nil && mes.MessageID != 0 {
+							go func(chatid int64, id int) {
+								time.Sleep(time.Second * 3)
+								s.tg.tgBot.Send(tgbotapi.NewDeleteMessage(chatid, id))
+							}(update.Message.Chat.ID, mes.MessageID)
+						}
+					}
+				}
+			}
+
+			if strings.Contains(s.tg.callbackQuery, "delid_") { //delid_***
+				id, _ := strconv.Atoi(s.tg.callbackQuery[6:len(s.tg.callbackQuery)])
+				s.tg.tgBot.Send(tgbotapi.NewDeleteMessage(update.Message.Chat.ID, id))
+			}
+
+			s.tg.callbackQuery = ""
+			continue
+		}
+
 		if update.CallbackQuery != nil && update.CallbackQuery.Message != nil && update.CallbackQuery.Message.Chat != nil {
 			if !userInList(s.tg.userList, update.CallbackQuery.Message.Chat.ID) {
 				continue
@@ -28,7 +83,7 @@ func (s *Service) StartTG() {
 
 			switch update.CallbackQuery.Data {
 			case "update_status":
-				text, inlineKeyboard := s.tg.textStatus(s.yt.stop > 0)
+				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0)
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageText(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text))
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, inlineKeyboard))
 				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
@@ -37,18 +92,22 @@ func (s *Service) StartTG() {
 					s.yt.stopch <- true
 				}
 				s.yt.stop = 0
-				text, inlineKeyboard := s.tg.textStatus(s.yt.stop > 0)
+				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0)
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageText(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text))
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, inlineKeyboard))
 				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Ok"))
 			case "stop":
 				s.yt.stop = 1
-				text, inlineKeyboard := s.tg.textStatus(s.yt.stop > 0)
+				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0)
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageText(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text))
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, inlineKeyboard))
 				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Ok"))
 			case "delete":
 				s.tg.tgBot.Send(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID))
+			case "cancel":
+				s.tg.callbackQuery = ""
+				s.tg.tgBot.Send(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID))
+				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Cancelled"))
 			}
 
 			if strings.Contains(update.CallbackQuery.Data, "get_rss") {
@@ -73,9 +132,51 @@ func (s *Service) StartTG() {
 				buttons1 := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("🗞Update", update.CallbackQuery.Data), tgbotapi.NewInlineKeyboardButtonData("❌Delete", "delete")}
 				msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(buttons1)
 				s.tg.tgBot.Send(msg)
-				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, ""))
-			}
+				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
+			} else if strings.Contains(update.CallbackQuery.Data, "st_") {
 
+				if strings.Contains(update.CallbackQuery.Data, "st_update_") { //st_update_
+					if strings.Contains(update.CallbackQuery.Data, "chid") {
+						s.tg.tgBot.Send(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID))
+						s.tg.toIDMes(s.db, update.CallbackQuery.Message.Chat.ID)
+						s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
+						continue
+					}
+				}
+
+				msgCancel := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "")
+				buttons := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("❌Cancel", "cancel")}
+				msgCancel.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(buttons)
+
+				if strings.Contains(update.CallbackQuery.Data, "edit_") { //st_edit_
+					if strings.Contains(update.CallbackQuery.Data, "chid") {
+						s.tg.callbackQuery = update.CallbackQuery.Data
+						msgCancel.Text = "Enter the IDs separated by commas."
+						mes, err := s.tg.tgBot.Send(msgCancel)
+						if err == nil && mes.MessageID != 0 {
+							s.tg.callbackQuery += "delid_" + strconv.Itoa(mes.MessageID)
+						}
+						s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, ""))
+					}
+				} else if strings.Contains(update.CallbackQuery.Data, "bl_") { //st_bl_
+					if strings.Contains(update.CallbackQuery.Data, "chid") {
+						settings := s.db.GetLs()
+
+						if settings.DBPriority.ToIDbl {
+							s.tg.toID = s.envVars.toID
+							settings.DBPriority.ToIDbl = false
+						} else {
+							s.tg.toID = settings.DBPriority.ToID
+							settings.DBPriority.ToIDbl = true
+						}
+
+						err = s.db.SetLs(&settings)
+						s.FatalTG("StartTG - s.db.SetLs()", err)
+
+						s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
+					}
+				}
+			}
 			continue
 		}
 
@@ -90,7 +191,7 @@ func (s *Service) StartTG() {
 				msg.Text = fmt.Sprintf("Hi!")
 				s.tg.tgBot.Send(msg)
 			case "status":
-				msg.Text, msg.ReplyMarkup = s.tg.textStatus(s.yt.stop > 0)
+				msg.Text, msg.ReplyMarkup = s.tg.statusMes(s.yt.stop > 0)
 				s.tg.tgBot.Send(msg)
 			case "lastrss":
 				msg.ParseMode = "markdown"
@@ -103,12 +204,15 @@ func (s *Service) StartTG() {
 					msg.Text = "Failed to get"
 					s.tg.tgBot.Send(msg)
 					s.tg.SendLog(err.Error())
+					continue
 				}
 				msg.ParseMode = "markdown"
 				msg.Text = s.tg.textRSS(feed, s.loc)
 				buttons1 := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("🗞Update", "get_rss"+id), tgbotapi.NewInlineKeyboardButtonData("❌Delete", "delete")}
 				msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(buttons1)
 				s.tg.tgBot.Send(msg)
+			case "toid":
+				s.tg.toIDMes(s.db, update.Message.Chat.ID)
 			case "search":
 				if update.Message.ReplyToMessage != nil {
 					update.Message.Text = "/search " + update.Message.ReplyToMessage.Text
@@ -156,6 +260,37 @@ func (tg *tg) SendNotification(text string) {
 	}
 }
 
+func (tg *tg) toIDMes(db *model.Model, id int64) {
+	msg := tgbotapi.NewMessage(id, "")
+	var change, status string
+	var toIDstrs []string
+
+	settings := db.GetLs()
+
+	if settings.DBPriority.ToIDbl {
+		status = "DataBase"
+		change = "Select Environment"
+	} else {
+		status = "Environment"
+		change = "Select DataBase"
+	}
+
+	for _, v := range tg.toID {
+		toIDstrs = append(toIDstrs, strconv.FormatInt(v, 10))
+	}
+	msg.ParseMode = "markdown"
+	msg.Text = fmt.Sprintf("To ID: `%v`\nSource: %v", strings.Join(toIDstrs, ","), status)
+	buttons1 := []tgbotapi.InlineKeyboardButton{
+		tgbotapi.NewInlineKeyboardButtonData("✏️Edit", "st_edit_chid"),
+		tgbotapi.NewInlineKeyboardButtonData("🗞Update", "st_update_chid"),
+	}
+	buttons2 := []tgbotapi.InlineKeyboardButton{
+		tgbotapi.NewInlineKeyboardButtonData(change, "st_bl_chid"),
+	}
+	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(buttons1, buttons2)
+	tg.tgBot.Send(msg)
+}
+
 func (tg *tg) SendLog(text string) {
 	if tg.errorToID == 0 {
 		return
@@ -164,7 +299,7 @@ func (tg *tg) SendLog(text string) {
 	tg.tgBot.Send(msg)
 }
 
-func (tg *tg) textStatus(stop bool) (string, tgbotapi.InlineKeyboardMarkup) {
+func (tg *tg) statusMes(stop bool) (string, tgbotapi.InlineKeyboardMarkup) {
 	tm := time.Since(tg.uptime).Round(time.Second)
 	var hours int
 	var hoursStr string
@@ -204,4 +339,10 @@ func userInList(list []int64, a int64) bool {
 		}
 	}
 	return false
+}
+
+func deleteSpaces(list *[]string) {
+	for i := 0; i < len(*list); i++ {
+		(*list)[i] = strings.ReplaceAll((*list)[i], " ", "")
+	}
 }

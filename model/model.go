@@ -1,7 +1,7 @@
 package model
 
 type db interface {
-	GetLs(ls *Settings) error
+	GetLs() Settings
 	SetLs(ls *Settings) error
 	Check(id string) (bool, error)
 }
@@ -16,8 +16,8 @@ func New(db db) *Model {
 	}
 }
 
-func (m *Model) GetLs(ls *Settings) error {
-	return m.db.GetLs(ls)
+func (m *Model) GetLs() Settings {
+	return m.db.GetLs()
 }
 
 func (m *Model) SetLs(ls *Settings) error {
