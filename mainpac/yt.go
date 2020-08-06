@@ -13,7 +13,9 @@ func (s *Service) StartYT() {
 	for {
 		idsForCheck := []string{}
 		feed, err := fp.ParseURL("https://www.youtube.com/feeds/videos.xml?channel_id=" + s.yt.channelID)
-		s.FatalTG("StartYT - fp.ParseURL()", err)
+		if err != nil {
+			s.tg.SendLog(fmt.Sprintf("ERR StartYT - fp.ParseURL(): %v", err.Error()))
+		}
 		s.yt.lastRSS = *feed
 		for _, value := range feed.Items {
 			if !strings.Contains(value.GUID, "yt:video:") {
