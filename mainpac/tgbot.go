@@ -300,7 +300,7 @@ func (tg *tg) toIDMes(db *model.Model, id int64) {
 	msg.Text = fmt.Sprintf("To ID: `%v`\nSource: %v", strings.Join(toIDstrs, ","), status)
 	buttons1 := []tgbotapi.InlineKeyboardButton{
 		tgbotapi.NewInlineKeyboardButtonData("✏️Edit", "st_edit_chid"),
-		tgbotapi.NewInlineKeyboardButtonData("🗞Update", "st_update_chid"),
+		tgbotapi.NewInlineKeyboardButtonData("🔄Update", "st_update_chid"),
 	}
 	buttons2 := []tgbotapi.InlineKeyboardButton{
 		tgbotapi.NewInlineKeyboardButtonData(change, "st_bl_chid"),
