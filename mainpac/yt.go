@@ -1,6 +1,7 @@
 package mainpac
 
 import (
+	"StreamTelegram/go-log"
 	"fmt"
 	"github.com/mmcdole/gofeed"
 	"strings"
@@ -51,6 +52,28 @@ func (s *Service) StartYT() {
 					t = t.In(s.loc)
 					text := fmt.Sprintf("%v\n\nЗапланировано на %v по Мск\nyoutube.com/watch?v=%v", value.Snippet.Title, t.Format("2 Jan 15:04"), value.Id)
 					s.tg.SendNotification(text)
+					go func(tmSec int64, id string) {
+						log.Debug("жду ", tmSec, " Sec")
+						time.Sleep(time.Second * time.Duration(tmSec))
+						time.Sleep(time.Second * 15)
+						log.Debug("жду начала")
+						for exit := 0; exit < 60; exit++ {
+							log.Debug("цикл-", exit)
+							vid := s.yt.yts.Videos.List([]string{"snippet", "liveStreamingDetails"})
+							vid.Id(id)
+							vidRes, err := vid.Do()
+							if err != nil {
+								s.tg.SendLog("StartYT - waiting for stream, youtubeService.Videos.List.Do()")
+							}
+							if len(vidRes.Items) == 1 {
+								if vidRes.Items[0].Snippet.LiveBroadcastContent == "live" {
+									s.tg.SendNotification("Стрим начался!")
+									break
+								}
+							}
+							time.Sleep(time.Second * 30)
+						}
+					}(t.Unix()-time.Now().Unix(), value.Id)
 				}
 			}
 		}
