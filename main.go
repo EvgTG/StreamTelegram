@@ -14,7 +14,7 @@ func main() {
 TODO:
 tg команды - время проверки (через сколько чекать rss), ch id, несколько rss(протестить не забанят ли)
 перенести loc и текста в конфиг
-перебрать ошибки, + errors.Wrap, case в tg повставлять, перебрать имена пм
+перебрать ошибки, + errors.Wrap, case в tg повставлять, перебрать имена пм, защита от "ERR StartYT - fp.ParseURL(): http error: 404 Not Found"
 возможность иметь более пустой env файл
 NewEditMessageTextAndMarkup
 */
