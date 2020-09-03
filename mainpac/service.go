@@ -43,11 +43,11 @@ type yt struct {
 }
 
 type InitConfig struct {
-	Proxy, TgApiToken   string //tgBot
+	Proxy, TgApiToken   string
 	TOID                []int64
 	ErrorToID           int64
 	UserList            []int64
-	ChannelID, YTApiKey string //yt
+	ChannelID, YTApiKey string
 }
 
 type envVars struct {
@@ -72,7 +72,7 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 		}
 	}
 
-	tgBot, err := tgbotapi.NewBotAPIWithClient(cfg.TgApiToken, client)
+	tgBot, err := tgbotapi.NewBotAPIWithClient(cfg.TgApiToken, "https://api.telegram.org/bot%s/%s", client)
 	if err != nil {
 		return nil, fmt.Errorf("mainpac.New - tgbotapi.NewBotAPIWithClient(): %s", err)
 	}

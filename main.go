@@ -12,13 +12,12 @@ func main() {
 
 /*
 TODO:
-tg команды - время проверки (через сколько чекать rss), ch id, несколько rss(протестить не забанят ли)
+tg команды - время проверки (через сколько проверять rss), ch id
 перенести loc и текста в конфиг
-перебрать ошибки, + errors.Wrap, case в tg повставлять, перебрать имена пм, защита от "ERR StartYT - fp.ParseURL(): http error: 404 Not Found"
-возможность иметь более пустой env файл
-NewEditMessageTextAndMarkup
+перебрать ошибки, + errors.Wrap, перебрать имена пм, защита от "ERR StartYT - fp.ParseURL(): http error: 404 Not Found" + 500ая
 */
 
+// тест на лимиты запросов.
 /*
 import (
 	"fmt"
