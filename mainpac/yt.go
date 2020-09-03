@@ -16,6 +16,8 @@ func (s *Service) StartYT() {
 		feed, err := fp.ParseURL("https://www.youtube.com/feeds/videos.xml?channel_id=" + s.yt.channelID)
 		if err != nil {
 			s.tg.SendLog(fmt.Sprintf("ERR StartYT - fp.ParseURL(): %v", err.Error()))
+			s.cycleActions()
+			continue
 		}
 		s.yt.lastRSS = *feed
 		for _, value := range feed.Items {
@@ -35,7 +37,11 @@ func (s *Service) StartYT() {
 			video := s.yt.yts.Videos.List([]string{"snippet", "liveStreamingDetails"})
 			video.Id(strings.Join(idsForCheck, ","))
 			videoRes, err := video.Do()
-			s.FatalTG("StartYT - youtubeService.Videos.List.Do()", err)
+			if err != nil {
+				s.tg.SendLog(fmt.Sprintf("ERR StartYT - youtubeService.Videos.List.Do(): %v", err.Error()))
+				s.cycleActions()
+				continue
+			}
 
 			for _, value := range videoRes.Items {
 				if value.Snippet.LiveBroadcastContent != "live" && value.Snippet.LiveBroadcastContent != "upcoming" {
@@ -64,6 +70,8 @@ func (s *Service) StartYT() {
 							vidRes, err := vid.Do()
 							if err != nil {
 								s.tg.SendLog("StartYT - waiting for stream, youtubeService.Videos.List.Do()")
+								time.Sleep(time.Second * 30)
+								continue
 							}
 							if len(vidRes.Items) == 1 {
 								if vidRes.Items[0].Snippet.LiveBroadcastContent == "live" {
@@ -78,12 +86,16 @@ func (s *Service) StartYT() {
 			}
 		}
 
-		s.tg.numberIterations++
-		s.yt.lastTime = time.Now()
-		time.Sleep(time.Minute * 5)
-		if s.yt.stop == 1 {
-			s.yt.stop = 2
-			<-s.yt.stopch
-		}
+		s.cycleActions()
+	}
+}
+
+func (s *Service) cycleActions() {
+	s.tg.numberIterations++
+	s.yt.lastTime = time.Now()
+	time.Sleep(time.Minute * 3)
+	if s.yt.stop == 1 {
+		s.yt.stop = 2
+		<-s.yt.stopch
 	}
 }
