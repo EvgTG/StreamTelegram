@@ -7,8 +7,10 @@ import (
 	"StreamTelegram/model"
 	"StreamTelegram/mongodb"
 	"go.uber.org/fx"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func New() (app *fx.App) {
@@ -74,6 +76,15 @@ func NewService(conf *config.Config, db *model.Model) *mainpac.Service {
 		log.Fatal("main.NewService - empty USERLIST")
 	}
 
+	var loc *time.Location
+	locStr := os.Getenv("LOC")
+	if locStr == "" {
+		loc, _ = time.LoadLocation("")
+	} else {
+		loc, err = time.LoadLocation(locStr)
+		mainpac.Fatal("main.NewService - time zone time.LoadLocation()", err)
+	}
+
 	cfg := mainpac.InitConfig{
 		Proxy:      conf.GetString("PROXY"),
 		TgApiToken: conf.GetString("TOKEN"),
@@ -82,6 +93,7 @@ func NewService(conf *config.Config, db *model.Model) *mainpac.Service {
 		UserList:   userList,
 		ChannelID:  conf.GetString("CHANNELID"),
 		YTApiKey:   conf.GetString("YTAPIKEY"),
+		Loc:        loc,
 	}
 
 	service, err := mainpac.New(cfg, db)

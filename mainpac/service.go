@@ -48,6 +48,7 @@ type InitConfig struct {
 	ErrorToID           int64
 	UserList            []int64
 	ChannelID, YTApiKey string
+	Loc                 *time.Location
 }
 
 type envVars struct {
@@ -89,9 +90,6 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 		return nil, fmt.Errorf("mainpac.New - youtube.NewService(): %s", err)
 	}
 
-	loc, err := time.LoadLocation("Europe/Moscow")
-	Fatal("mainpac.New - time.LoadLocation()", err)
-
 	service := &Service{
 		tg: &tg{
 			tgBot:            tgBot,
@@ -112,7 +110,7 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 			lastTime:  time.Time{},
 		},
 		db:  db,
-		loc: loc,
+		loc: cfg.Loc,
 		envVars: envVars{
 			toID: cfg.TOID,
 		},

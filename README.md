@@ -1,16 +1,18 @@
 # StreamTelegram
 Notifications about YouTube streams in Telegram
 ## Environment
-* CONFIG_NAME (env file)
+required parameters - *
+* CONFIG_NAME* (env file)
 * LOGLVL (panic, fatal, error, warn or warning, info, debug, trace)
-* NAMEDB (Database name)
+* NAMEDB* (Database name)
 * PROXY (telegram bot, socks5://login:pass@ip:port)
-* TOKEN (telegram bot api token)
-* USERLIST (user IDs, "id,id,id")
-* TOID (chat where messages will be sent)
-* ERRORTOID (chat with logs)
-* YTAPIKEY (youtube api key)
-* CHANNELID (youtube channel id. For example UC2_vpnza621Sa0cf_xhqJ8Q)
+* TOKEN* (telegram bot api token)
+* USERLIST* (user IDs, "id,id,id")
+* TOID* (chat where messages will be sent)
+* ERRORTOID* (chat with logs)
+* YTAPIKEY* (youtube api key)
+* CHANNELID* (youtube channel id. For example UC2_vpnza621Sa0cf_xhqJ8Q)
+* LOC (time zone, default - UTC)
 ## Telegram bot commands
 * status - uptime & number of RSS check iterations
 * search - search channel id by the link to the video ("/seach url" or "/seach" response to a link)
