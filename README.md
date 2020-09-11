@@ -13,6 +13,7 @@ required parameters - *
 * YTAPIKEY* (youtube api key)
 * CHANNELID* (youtube channel id. For example UC2_vpnza621Sa0cf_xhqJ8Q)
 * LOC (time zone, default - UTC)
+* LANGUAGETEXT (language of text, rus or eng, default - eng)
 ## Telegram bot commands
 * status - uptime & number of RSS check iterations
 * search - search channel id by the link to the video ("/seach url" or "/seach" response to a link)

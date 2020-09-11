@@ -49,13 +49,13 @@ func (s *Service) StartYT() {
 
 				switch value.Snippet.LiveBroadcastContent {
 				case "live":
-					text := fmt.Sprintf("%v\n\nyoutube.com/watch?v=%v", value.Snippet.Title, value.Id)
+					text := fmt.Sprintf(s.yt.texts["live"], value.Snippet.Title, value.Id)
 					s.tg.SendNotification(text)
 				case "upcoming":
 					t, err := time.Parse("2006-01-02T15:04:05Z", value.LiveStreamingDetails.ScheduledStartTime)
 					s.FatalTG("StartYT - time.Parse()", err)
 					t = t.In(s.loc)
-					text := fmt.Sprintf("%v\n\nЗапланировано на %v по Мск\nyoutube.com/watch?v=%v", value.Snippet.Title, t.Format("2 Jan 15:04"), value.Id)
+					text := fmt.Sprintf(s.yt.texts["upcoming"], value.Snippet.Title, t.Format("2 Jan 15:04 MST"), value.Id)
 					s.tg.SendNotification(text)
 
 					//уведомление о начале планируемого стрима
@@ -72,7 +72,7 @@ func (s *Service) StartYT() {
 							}
 							if len(vidRes.Items) == 1 {
 								if vidRes.Items[0].Snippet.LiveBroadcastContent == "live" {
-									s.tg.SendNotification("Стрим начался!")
+									s.tg.SendNotification(s.yt.texts["upcoming_go"])
 									break
 								}
 							}

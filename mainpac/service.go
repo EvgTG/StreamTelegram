@@ -36,6 +36,7 @@ type tg struct {
 type yt struct {
 	yts       *youtube.Service
 	channelID string
+	texts     map[string]string
 	stop      int8
 	stopch    chan bool
 	lastRSS   gofeed.Feed
@@ -49,6 +50,7 @@ type InitConfig struct {
 	UserList            []int64
 	ChannelID, YTApiKey string
 	Loc                 *time.Location
+	LanguageOFText      string
 }
 
 type envVars struct {
@@ -104,6 +106,7 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 		yt: &yt{
 			yts:       yts,
 			channelID: cfg.ChannelID,
+			texts:     GetTexts(cfg.LanguageOFText),
 			stop:      0,
 			stopch:    make(chan bool),
 			lastRSS:   gofeed.Feed{},

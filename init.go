@@ -86,14 +86,15 @@ func NewService(conf *config.Config, db *model.Model) *mainpac.Service {
 	}
 
 	cfg := mainpac.InitConfig{
-		Proxy:      conf.GetString("PROXY"),
-		TgApiToken: conf.GetString("TOKEN"),
-		TOID:       toID,
-		ErrorToID:  errorToID,
-		UserList:   userList,
-		ChannelID:  conf.GetString("CHANNELID"),
-		YTApiKey:   conf.GetString("YTAPIKEY"),
-		Loc:        loc,
+		Proxy:          conf.GetString("PROXY"),
+		TgApiToken:     conf.GetString("TOKEN"),
+		TOID:           toID,
+		ErrorToID:      errorToID,
+		UserList:       userList,
+		ChannelID:      conf.GetString("CHANNELID"),
+		YTApiKey:       conf.GetString("YTAPIKEY"),
+		Loc:            loc,
+		LanguageOFText: conf.GetString("LANGUAGETEXT"),
 	}
 
 	service, err := mainpac.New(cfg, db)
