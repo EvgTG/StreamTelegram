@@ -90,7 +90,7 @@ func (s *Service) StartYT() {
 func (s *Service) cycleActions() {
 	s.tg.numberIterations++
 	s.yt.lastTime = time.Now()
-	time.Sleep(time.Minute * 3)
+	time.Sleep(s.yt.CycleTime)
 	if s.yt.stop == 1 {
 		s.yt.stop = 2
 		<-s.yt.stopch

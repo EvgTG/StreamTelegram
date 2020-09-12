@@ -27,12 +27,13 @@ func (s *Service) StartTG() {
 			}
 		}
 
-		//контекстный ввод (настройки)
+		//context input (settings)
 		if s.tg.callbackQuery != "" && update.Message != nil && update.Message.Chat != nil { //st_edit_chiddelid_***
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 			if strings.Contains(s.tg.callbackQuery, "st_") {
 				if strings.Contains(s.tg.callbackQuery, "edit_") {
-					if strings.Contains(s.tg.callbackQuery, "chid") {
+					switch {
+					case strings.Contains(s.tg.callbackQuery, "chid"):
 						var ints []int64
 						var errbl bool
 
@@ -55,11 +56,37 @@ func (s *Service) StartTG() {
 						s.tg.toID = ints
 						st := s.db.GetLs()
 						st.DBPriority.ToID = ints
-						st.DBPriority.ToIDbl = true
+						st.DBPriority.ToIDBL = true
 						err := s.db.SetLs(&st)
 						s.FatalTG("StartTG - s.db.SetLs()", err)
 
 						s.tg.callbackQuery = s.tg.callbackQuery[12:len(s.tg.callbackQuery)]
+						msg.Text = "Changed"
+						mes, err := s.tg.tgBot.Send(msg)
+						if err == nil && mes.MessageID != 0 {
+							go func(chatid int64, id int) {
+								time.Sleep(time.Second * 3)
+								s.tg.tgBot.Send(tgbotapi.NewDeleteMessage(chatid, id))
+							}(update.Message.Chat.ID, mes.MessageID)
+						}
+					case strings.Contains(s.tg.callbackQuery, "cycletime"):
+						cycleTimeInt, err := strconv.ParseInt(update.Message.Text, 10, 64)
+						if err != nil {
+							msg.Text = "Invalid formatting. Try again"
+							s.tg.tgBot.Send(msg)
+							continue
+						}
+
+						cycleTime := time.Duration(cycleTimeInt) * time.Minute
+
+						s.yt.CycleTime = cycleTime
+						st := s.db.GetLs()
+						st.DBPriority.CycleTime = cycleTime
+						st.DBPriority.CycleTimeBL = true
+						err = s.db.SetLs(&st)
+						s.FatalTG("StartTG - s.db.SetLs()", err)
+
+						s.tg.callbackQuery = s.tg.callbackQuery[17:len(s.tg.callbackQuery)]
 						msg.Text = "Changed"
 						mes, err := s.tg.tgBot.Send(msg)
 						if err == nil && mes.MessageID != 0 {
@@ -81,7 +108,7 @@ func (s *Service) StartTG() {
 			continue
 		}
 
-		//кнопки
+		//buttons
 		if update.CallbackQuery != nil && update.CallbackQuery.Message != nil && update.CallbackQuery.Message.Chat != nil {
 			if !userInList(s.tg.userList, update.CallbackQuery.Message.Chat.ID) {
 				continue
@@ -89,7 +116,7 @@ func (s *Service) StartTG() {
 
 			switch {
 			case update.CallbackQuery.Data == "update_status":
-				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0, s.yt.lastTime, s.loc)
+				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0, s.yt.lastTime, s.loc, s.yt.CycleTime)
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text, inlineKeyboard))
 				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
 			case update.CallbackQuery.Data == "start":
@@ -97,12 +124,12 @@ func (s *Service) StartTG() {
 					s.yt.stopch <- true
 				}
 				s.yt.stop = 0
-				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0, s.yt.lastTime, s.loc)
+				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0, s.yt.lastTime, s.loc, s.yt.CycleTime)
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text, inlineKeyboard))
 				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Ok"))
 			case update.CallbackQuery.Data == "stop":
 				s.yt.stop = 1
-				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0, s.yt.lastTime, s.loc)
+				text, inlineKeyboard := s.tg.statusMes(s.yt.stop > 0, s.yt.lastTime, s.loc, s.yt.CycleTime)
 				s.tg.tgBot.Send(tgbotapi.NewEditMessageTextAndMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, text, inlineKeyboard))
 				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Ok"))
 			case update.CallbackQuery.Data == "delete":
@@ -136,9 +163,15 @@ func (s *Service) StartTG() {
 				s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
 			case strings.Contains(update.CallbackQuery.Data, "st_"):
 				if strings.Contains(update.CallbackQuery.Data, "st_update_") { //st_update_
-					if strings.Contains(update.CallbackQuery.Data, "chid") {
+					switch {
+					case strings.Contains(update.CallbackQuery.Data, "chid"):
 						s.tg.tgBot.Send(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID))
 						s.tg.toIDMes(s.db, update.CallbackQuery.Message.Chat.ID)
+						s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
+						continue
+					case strings.Contains(update.CallbackQuery.Data, "cycletime"):
+						s.tg.tgBot.Send(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID))
+						s.cycleTimeMes(update.CallbackQuery.Message.Chat.ID)
 						s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
 						continue
 					}
@@ -150,7 +183,8 @@ func (s *Service) StartTG() {
 
 				switch {
 				case strings.Contains(update.CallbackQuery.Data, "edit_"):
-					if strings.Contains(update.CallbackQuery.Data, "chid") {
+					switch {
+					case strings.Contains(update.CallbackQuery.Data, "chid"):
 						s.tg.callbackQuery = update.CallbackQuery.Data
 						msgCancel.Text = "Enter the IDs separated by commas."
 						mes, err := s.tg.tgBot.Send(msgCancel)
@@ -158,17 +192,41 @@ func (s *Service) StartTG() {
 							s.tg.callbackQuery += "delid_" + strconv.Itoa(mes.MessageID)
 						}
 						s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, ""))
+					case strings.Contains(update.CallbackQuery.Data, "cycletime"):
+						s.tg.callbackQuery = update.CallbackQuery.Data
+						msgCancel.Text = "Enter the channel check time."
+						mes, err := s.tg.tgBot.Send(msgCancel)
+						if err == nil && mes.MessageID != 0 {
+							s.tg.callbackQuery += "delid_" + strconv.Itoa(mes.MessageID)
+						}
+						s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, ""))
 					}
 				case strings.Contains(update.CallbackQuery.Data, "bl_"):
-					if strings.Contains(update.CallbackQuery.Data, "chid") {
+					switch {
+					case strings.Contains(update.CallbackQuery.Data, "chid"):
 						settings := s.db.GetLs()
 
-						if settings.DBPriority.ToIDbl {
+						if settings.DBPriority.ToIDBL {
 							s.tg.toID = s.envVars.toID
-							settings.DBPriority.ToIDbl = false
+							settings.DBPriority.ToIDBL = false
 						} else {
 							s.tg.toID = settings.DBPriority.ToID
-							settings.DBPriority.ToIDbl = true
+							settings.DBPriority.ToIDBL = true
+						}
+
+						err = s.db.SetLs(&settings)
+						s.FatalTG("StartTG - s.db.SetLs()", err)
+
+						s.tg.tgBot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, "Updated"))
+					case strings.Contains(update.CallbackQuery.Data, "cycletime"):
+						settings := s.db.GetLs()
+
+						if settings.DBPriority.CycleTimeBL {
+							s.yt.CycleTime = s.envVars.cycleTime
+							settings.DBPriority.CycleTimeBL = false
+						} else {
+							s.yt.CycleTime = settings.DBPriority.CycleTime
+							settings.DBPriority.CycleTimeBL = true
 						}
 
 						err = s.db.SetLs(&settings)
@@ -185,7 +243,7 @@ func (s *Service) StartTG() {
 			continue
 		}
 
-		//команды
+		//commands
 		if update.Message.IsCommand() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 			switch update.Message.Command() {
@@ -193,7 +251,7 @@ func (s *Service) StartTG() {
 				msg.Text = fmt.Sprintf("Hi!")
 				s.tg.tgBot.Send(msg)
 			case "status":
-				msg.Text, msg.ReplyMarkup = s.tg.statusMes(s.yt.stop > 0, s.yt.lastTime, s.loc)
+				msg.Text, msg.ReplyMarkup = s.tg.statusMes(s.yt.stop > 0, s.yt.lastTime, s.loc, s.yt.CycleTime)
 				s.tg.tgBot.Send(msg)
 			case "lastrss":
 				msg.ParseMode = "markdown"
@@ -221,10 +279,12 @@ func (s *Service) StartTG() {
 				msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(buttons1)
 				s.tg.tgBot.Send(msg)
 			case "settings":
-				msg.Text = "/toid - edit targets for notifications"
+				msg.Text = "/toid - modify targets for notification\n/cycletime - change the channel check time"
 				s.tg.tgBot.Send(msg)
 			case "toid":
 				s.tg.toIDMes(s.db, update.Message.Chat.ID)
+			case "cycletime":
+				s.cycleTimeMes(update.Message.Chat.ID)
 			case "search":
 				if update.Message.ReplyToMessage != nil {
 					update.Message.Text = "/search " + update.Message.ReplyToMessage.Text
@@ -283,7 +343,7 @@ func (tg *tg) toIDMes(db *model.Model, id int64) {
 
 	settings := db.GetLs()
 
-	if settings.DBPriority.ToIDbl {
+	if settings.DBPriority.ToIDBL {
 		status = "DataBase"
 		change = "Select Environment"
 	} else {
@@ -307,6 +367,32 @@ func (tg *tg) toIDMes(db *model.Model, id int64) {
 	tg.tgBot.Send(msg)
 }
 
+func (s *Service) cycleTimeMes(id int64) {
+	msg := tgbotapi.NewMessage(id, "")
+	var change, status string
+
+	settings := s.db.GetLs()
+
+	if settings.DBPriority.CycleTimeBL {
+		status = "DataBase"
+		change = "Select Environment"
+	} else {
+		status = "Environment"
+		change = "Select DataBase"
+	}
+
+	msg.Text = fmt.Sprintf("Cycle time: %vm\nSource: %v", s.yt.CycleTime.Minutes(), status)
+	buttons1 := []tgbotapi.InlineKeyboardButton{
+		tgbotapi.NewInlineKeyboardButtonData("✏️Edit", "st_edit_cycletime"),
+		tgbotapi.NewInlineKeyboardButtonData("🔄Update", "st_update_cycletime"),
+	}
+	buttons2 := []tgbotapi.InlineKeyboardButton{
+		tgbotapi.NewInlineKeyboardButtonData(change, "st_bl_cycletime"),
+	}
+	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(buttons1, buttons2)
+	s.tg.tgBot.Send(msg)
+}
+
 func (tg *tg) SendLog(text string) {
 	if tg.errorToID == 0 {
 		return
@@ -315,7 +401,7 @@ func (tg *tg) SendLog(text string) {
 	tg.tgBot.Send(msg)
 }
 
-func (tg *tg) statusMes(stop bool, lastTm time.Time, loc *time.Location) (string, tgbotapi.InlineKeyboardMarkup) {
+func (tg *tg) statusMes(stop bool, lastTm time.Time, loc *time.Location, cycleTime time.Duration) (string, tgbotapi.InlineKeyboardMarkup) {
 	tm := time.Since(tg.uptime).Round(time.Second)
 	var hours int
 	var hoursStr string
@@ -324,7 +410,7 @@ func (tg *tg) statusMes(stop bool, lastTm time.Time, loc *time.Location) (string
 		hours++
 		hoursStr = fmt.Sprintf("%vd", hours)
 	}
-	text := fmt.Sprintf("Uptime: %s\nPause: %v\nNumber of iterations: %v\nTime of last check RSS:\n%v", hoursStr+tm.String(), stop, tg.numberIterations, lastTm.In(loc).Format("01.02 15:04 -07:00 MST"))
+	text := fmt.Sprintf("Uptime: %s\nPause: %v\nNumber of iterations: %v\nCycle time: %vm\nTime of last check RSS:\n%v", hoursStr+tm.String(), stop, tg.numberIterations, cycleTime.Minutes(), lastTm.In(loc).Format("01.02 15:04 -07:00 MST"))
 	buttons1 := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("🔄Update", "update_status")}
 	buttons2 := []tgbotapi.InlineKeyboardButton{tgbotapi.NewInlineKeyboardButtonData("▶️", "start"), tgbotapi.NewInlineKeyboardButtonData("⏸", "stop")}
 	inlineKeyboard := tgbotapi.NewInlineKeyboardMarkup(buttons1, buttons2)

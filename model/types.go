@@ -1,11 +1,15 @@
 package model
 
+import "time"
+
 type Settings struct {
 	DBPriority PrioritiesAndVariable
 	VideoIDs   []string
 }
 
 type PrioritiesAndVariable struct {
-	ToID   []int64
-	ToIDbl bool
+	ToIDBL      bool
+	ToID        []int64
+	CycleTimeBL bool
+	CycleTime   time.Duration
 }

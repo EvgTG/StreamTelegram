@@ -14,6 +14,7 @@ required parameters - *
 * CHANNELID* (youtube channel id. For example UC2_vpnza621Sa0cf_xhqJ8Q)
 * LOC (time zone, default - UTC)
 * LANGUAGETEXT (language of text, rus or eng, default - eng)
+* CYClETIME (channel check time in minutes, default - 3 min)
 ## Telegram bot commands
 * status - uptime & number of RSS check iterations
 * search - search channel id by the link to the video ("/seach url" or "/seach" response to a link)
@@ -21,6 +22,7 @@ required parameters - *
 * getrss - getting an rss feed by channel id
 * settings - settings
 * toid - edit targets for notifications 
+* cycletime - change the channel check time
   ### BotFather commands
 status - uptime & N iterations  
 search - [URL] search channel  

@@ -37,6 +37,7 @@ type yt struct {
 	yts       *youtube.Service
 	channelID string
 	texts     map[string]string
+	CycleTime time.Duration
 	stop      int8
 	stopch    chan bool
 	lastRSS   gofeed.Feed
@@ -51,10 +52,12 @@ type InitConfig struct {
 	ChannelID, YTApiKey string
 	Loc                 *time.Location
 	LanguageOFText      string
+	CycleTime           time.Duration
 }
 
 type envVars struct {
-	toID []int64
+	toID      []int64
+	cycleTime time.Duration
 }
 
 func New(cfg InitConfig, db *model.Model) (*Service, error) {
@@ -107,6 +110,7 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 			yts:       yts,
 			channelID: cfg.ChannelID,
 			texts:     GetTexts(cfg.LanguageOFText),
+			CycleTime: cfg.CycleTime,
 			stop:      0,
 			stopch:    make(chan bool),
 			lastRSS:   gofeed.Feed{},
@@ -115,13 +119,17 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 		db:  db,
 		loc: cfg.Loc,
 		envVars: envVars{
-			toID: cfg.TOID,
+			toID:      cfg.TOID,
+			cycleTime: cfg.CycleTime,
 		},
 	}
 
 	st := db.GetLs()
-	if st.DBPriority.ToIDbl {
+	if st.DBPriority.ToIDBL {
 		service.tg.toID = st.DBPriority.ToID
+	}
+	if st.DBPriority.CycleTimeBL {
+		service.yt.CycleTime = st.DBPriority.CycleTime
 	}
 
 	return service, nil

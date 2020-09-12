@@ -85,6 +85,17 @@ func NewService(conf *config.Config, db *model.Model) *mainpac.Service {
 		mainpac.Fatal("main.NewService - time zone time.LoadLocation()", err)
 	}
 
+	var cycleTime time.Duration
+	var cycleTimeInt int64
+	cycleTimeStr := os.Getenv("CYClETIME")
+	if cycleTimeStr == "" {
+		cycleTime = time.Duration(3) * time.Minute
+	} else {
+		cycleTimeInt, err = strconv.ParseInt(cycleTimeStr, 10, 64)
+		mainpac.Fatal("main.NewService - Cycle time strconv.ParseInt", err)
+		cycleTime = time.Duration(cycleTimeInt) * time.Minute
+	}
+
 	cfg := mainpac.InitConfig{
 		Proxy:          conf.GetString("PROXY"),
 		TgApiToken:     conf.GetString("TOKEN"),
@@ -95,6 +106,7 @@ func NewService(conf *config.Config, db *model.Model) *mainpac.Service {
 		YTApiKey:       conf.GetString("YTAPIKEY"),
 		Loc:            loc,
 		LanguageOFText: conf.GetString("LANGUAGETEXT"),
+		CycleTime:      cycleTime,
 	}
 
 	service, err := mainpac.New(cfg, db)
