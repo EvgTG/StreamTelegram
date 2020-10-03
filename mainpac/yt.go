@@ -48,7 +48,7 @@ func (s *Service) StartYT() {
 					continue
 				}
 
-				log.Debug("notif.go ", value.Snippet.Title)
+				log.Debug("notif.go ", time.Now(), " Title= ", value.Snippet.Title)
 				switch value.Snippet.LiveBroadcastContent {
 				case "live":
 					text := fmt.Sprintf(s.yt.texts["live"], value.Snippet.Title, value.Id)
