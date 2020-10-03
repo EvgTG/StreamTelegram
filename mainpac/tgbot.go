@@ -330,9 +330,11 @@ func (s *Service) StartTG() {
 }
 
 func (tg *tg) SendNotification(text string) {
+	log.Debug("notif.1 ", text)
 	for _, id := range tg.toID {
 		msg := tgbotapi.NewMessage(id, text)
 		tg.tgBot.Send(msg)
+		log.Debug("notif.2 ", id)
 	}
 }
 
