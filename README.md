@@ -4,7 +4,7 @@ Notifications about YouTube streams in Telegram
 required parameters - *
 * CONFIG_NAME* (env file)
 * LOGLVL (panic, fatal, error, warn or warning, info, debug, trace)
-* NAMEDB* (Database name)
+* NAMEDB* (Database name, mongoDB)
 * PROXY (telegram bot, socks5://login:pass@ip:port)
 * TOKEN* (telegram bot api token)
 * USERLIST* (user IDs, "id,id,id")
