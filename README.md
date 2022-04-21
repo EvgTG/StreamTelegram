@@ -1,10 +1,14 @@
 # StreamTelegram
 Notifications about YouTube streams in Telegram
+## Docker
+`docker build -t streamtelegram .`
+`docker run -d -v /path/env/:/app/env/ -e CONFIG_NAME=env/.env --net=host --name stg streamtelegram`
 ## Environment
 required parameters - *
 * CONFIG_NAME* (env file)
 * LOGLVL (panic, fatal, error, warn or warning, info, debug, trace)
 * NAMEDB* (Database name)
+* MONGOURL* (Database url)
 * PROXY (telegram bot, socks5://login:pass@ip:port)
 * TOKEN* (telegram bot api token)
 * USERLIST* (user IDs, "id,id,id")

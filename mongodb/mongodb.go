@@ -15,8 +15,8 @@ type Mong struct {
 	Settings model.Settings
 }
 
-func NewDB(nameCol string) *Mong {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
+func NewDB(nameCol, mongoUrl string) *Mong {
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongoUrl))
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -40,7 +40,7 @@ func Logger(conf *config.Config) {
 }
 
 func NewDB(conf *config.Config) *model.Model {
-	return model.New(mongodb.NewDB(conf.GetString("NAMEDB")))
+	return model.New(mongodb.NewDB(conf.GetString("NAMEDB"), conf.GetString("MONGOURL")))
 }
 
 func NewService(conf *config.Config, db *model.Model) *mainpac.Service {
