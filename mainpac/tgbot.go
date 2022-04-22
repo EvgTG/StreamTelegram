@@ -17,7 +17,7 @@ func (s *Service) StartTG() {
 	rgxChID := regexp.MustCompile(`UC[A-Za-z0-9_-]{22}`)
 
 	var err error
-	var updates chan tgbotapi.Update
+	updates := make(chan tgbotapi.Update, 10)
 
 	ticker := time.Tick(time.Second)
 	go func() {
@@ -25,6 +25,9 @@ func (s *Service) StartTG() {
 			<-ticker
 			updatess, _ := s.tg.tgBot.GetUpdates(s.tg.updateConfig)
 			for _, update := range updatess {
+				if update.UpdateID >= s.tg.updateConfig.Offset {
+					s.tg.updateConfig.Offset = update.UpdateID + 1
+				}
 				updates <- update
 			}
 		}
