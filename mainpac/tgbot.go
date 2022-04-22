@@ -17,18 +17,21 @@ func (s *Service) StartTG() {
 	rgxChID := regexp.MustCompile(`UC[A-Za-z0-9_-]{22}`)
 
 	var err error
-	var updates []tgbotapi.Update
+	var updates chan tgbotapi.Update
 
 	ticker := time.Tick(time.Second)
 	go func() {
 		for {
 			<-ticker
-			updates, _ = s.tg.tgBot.GetUpdates(s.tg.updateConfig)
+			updatess, _ := s.tg.tgBot.GetUpdates(s.tg.updateConfig)
+			for _, update := range updatess {
+				updates <- update
+			}
 		}
 	}()
 
 	log.Info("Start tg bot!")
-	for _, update := range updates {
+	for update := range updates {
 		if update.Message != nil {
 			if !userInList(s.tg.userList, update.Message.Chat.ID) {
 				continue
