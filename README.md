@@ -2,7 +2,7 @@
 Notifications about YouTube streams in Telegram
 ## Docker
 `docker build -t streamtelegram .`
-`docker run -d -v /path/env/:/app/env/ -e CONFIG_NAME=env/.env --net=host --name stg streamtelegram`
+`docker run -d -v /path/env/:/app/files/ --net=host --name streamtg streamtelegram`
 ## Environment
 required parameters - *
 * CONFIG_NAME* (env file)

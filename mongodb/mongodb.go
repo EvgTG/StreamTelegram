@@ -4,6 +4,7 @@ import (
 	"StreamTelegram/go-log"
 	"StreamTelegram/model"
 	"context"
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -18,12 +19,12 @@ type Mong struct {
 func NewDB(nameCol, mongoUrl string) *Mong {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongoUrl))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(errors.Wrap(err, "mongo.Connect "+mongoUrl))
 	}
 
 	err = client.Ping(context.TODO(), nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(errors.Wrap(err, "client.Ping"))
 	}
 
 	log.Info("Connected to MongoDB!")
@@ -33,7 +34,7 @@ func NewDB(nameCol, mongoUrl string) *Mong {
 	err = Mong.Mongo.Database(Mong.NameCol).Collection("Settings").FindOne(context.TODO(), bson.D{{}}).Decode(&Mong.Settings)
 	if err != nil {
 		if err.Error() != "mongo: no documents in result" {
-			log.Fatal(err)
+			log.Fatal(errors.Wrap(err, "Collection(\"Settings\")"))
 		}
 	}
 

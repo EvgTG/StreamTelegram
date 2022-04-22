@@ -16,11 +16,19 @@ func (s *Service) StartTG() {
 	rgxVID := regexp.MustCompile(`[A-Za-z0-9_-]{11}`)
 	rgxChID := regexp.MustCompile(`UC[A-Za-z0-9_-]{22}`)
 
-	updates, err := s.tg.tgBot.GetUpdatesChan(s.tg.updateConfig)
-	s.FatalTG("StartTG - tgBot.GetUpdatesChan()", err)
+	var err error
+	var updates []tgbotapi.Update
+
+	ticker := time.Tick(time.Second)
+	go func() {
+		for {
+			<-ticker
+			updates, _ = s.tg.tgBot.GetUpdates(s.tg.updateConfig)
+		}
+	}()
 
 	log.Info("Start tg bot!")
-	for update := range updates {
+	for _, update := range updates {
 		if update.Message != nil {
 			if !userInList(s.tg.userList, update.Message.Chat.ID) {
 				continue
