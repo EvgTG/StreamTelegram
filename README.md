@@ -1,9 +1,10 @@
 # StreamTelegram
-Notifications about YouTube streams in Telegram
-## Docker
-`docker build -t streamtelegram .`
-`docker run -d -v /path/env/:/app/files/ --net=host --name streamtg streamtelegram`
-## Environment
+Notifications about YouTube streams in Telegram.  
+Shit, needs rewriting.
+### Docker
+`docker build -t streamtelegram .`  
+`docker run -d -v /path/env/:/app/files/ --net=host --name streamtg streamtelegram`  
+### Environment
 required parameters - *
 * CONFIG_NAME* (env file)
 * LOGLVL (panic, fatal, error, warn or warning, info, debug, trace)
@@ -16,10 +17,10 @@ required parameters - *
 * ERRORTOID* (chat with logs)
 * YTAPIKEY* (youtube api key)
 * CHANNELID* (youtube channel id. For example UC2_vpnza621Sa0cf_xhqJ8Q)
-* LOC (time zone, default - UTC)
+* LOC (time zone, default - UTC, tzdata)
 * LANGUAGETEXT (language of text, rus or eng, default - eng)
 * CYClETIME (channel check time in minutes, default - 3 min)
-## Telegram bot commands
+### Telegram bot commands
 * status - uptime & number of RSS check iterations
 * search - search channel id by the link to the video ("/seach url" or "/seach" response to a link)
 * lastrss - last RSS received
@@ -27,9 +28,16 @@ required parameters - *
 * settings - settings
 * toid - edit targets for notifications 
 * cycletime - change the channel check time
-  ### BotFather commands
+#### BotFather commands
 status - uptime & N iterations  
 search - [URL] search channel  
 lastrss - last RSS received  
 getrss - [channel ID] get rss feed  
 settings - settings
+
+### Folders
+
+```
+files/
+    cfg.env
+```
