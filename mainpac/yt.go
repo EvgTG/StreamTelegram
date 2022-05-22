@@ -57,7 +57,7 @@ func (s *Service) StartYT() {
 					t, err := time.Parse("2006-01-02T15:04:05Z", value.LiveStreamingDetails.ScheduledStartTime)
 					s.FatalTG("StartYT - time.Parse()", err)
 					t = t.In(s.loc)
-					text := fmt.Sprintf(s.yt.texts["upcoming"], value.Snippet.Title, t.Format("2 Jan 15:04 MST"), value.Id)
+					text := fmt.Sprintf(s.yt.texts["upcoming"], value.Snippet.Title, t.Format(s.timeFormat), value.Id)
 					s.tg.SendNotification(text)
 
 					//уведомление о начале планируемого стрима

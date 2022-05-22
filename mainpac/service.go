@@ -15,11 +15,12 @@ import (
 )
 
 type Service struct {
-	tg      *tg
-	yt      *yt
-	db      *model.Model
-	loc     *time.Location
-	envVars envVars
+	tg         *tg
+	yt         *yt
+	db         *model.Model
+	loc        *time.Location
+	timeFormat string
+	envVars    envVars
 }
 
 type tg struct {
@@ -53,6 +54,7 @@ type InitConfig struct {
 	Loc                 *time.Location
 	LanguageOFText      string
 	CycleTime           time.Duration
+	TimeFormatWithCity  bool
 }
 
 type envVars struct {
@@ -95,6 +97,13 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 		return nil, fmt.Errorf("mainpac.New - youtube.NewService(): %s", err)
 	}
 
+	timeFormat := ""
+	if cfg.TimeFormatWithCity {
+		timeFormat = "2 Jan 15:04 MST"
+	} else {
+		timeFormat = "2 Jan 15:04"
+	}
+
 	service := &Service{
 		tg: &tg{
 			tgBot:            tgBot,
@@ -122,6 +131,7 @@ func New(cfg InitConfig, db *model.Model) (*Service, error) {
 			toID:      cfg.TOID,
 			cycleTime: cfg.CycleTime,
 		},
+		timeFormat: timeFormat,
 	}
 
 	st := db.GetLs()
