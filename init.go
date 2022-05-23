@@ -11,8 +11,7 @@ import (
 	"net/http"
 	"streamtg/go-log"
 	"streamtg/mainpac"
-	"streamtg/model"
-	"streamtg/mongodb"
+	"streamtg/minidb"
 	"streamtg/util"
 	"time"
 )
@@ -46,11 +45,13 @@ func Logger() {
 	log.Info("Go!")
 }
 
-func NewDB() *model.Model {
-	return model.New(mongodb.NewDB(CFG.NameDB, CFG.MongoUrl))
+func NewDB() *minidb.Pudge {
+	db, err := minidb.NewDB()
+	util.ErrCheckFatal(err, "minidb.NewDB()", "NewDB", "init")
+	return db
 }
 
-func NewService(db *model.Model) *mainpac.Service {
+func NewService(db *minidb.Pudge) *mainpac.Service {
 	lt, err := layout.New("mainpac/bot.yml")
 	util.ErrCheckFatal(err, "layout.New()", "NewService", "init")
 	bot, err := tb.NewBot(tb.Settings{
@@ -72,9 +73,9 @@ func NewService(db *model.Model) *mainpac.Service {
 			Uptime:        time.Now(),
 			CallbackQuery: make(map[int64]string, 0),
 		},
-		DB:   db,
-		Loc:  CFG.TimeLocation.Get(),
-		Rand: rand.New(rand.NewSource(time.Now().UnixNano())),
+		MiniDB: db,
+		Loc:    CFG.TimeLocation.Get(),
+		Rand:   rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 
 	return service

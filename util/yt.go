@@ -9,7 +9,7 @@ import (
 )
 
 func GetChannelIDByUrl(url string) (string, error) {
-	ok, err := regexp.MatchString("^https://www.youtube.com/(channel|c)/", url)
+	ok, err := regexp.MatchString("^https://www.youtube.com/(channel|c|user)/", url)
 	if err != nil {
 		return "", eris.Wrap(err, "regexp.MatchString()")
 	}

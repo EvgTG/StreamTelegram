@@ -6,15 +6,15 @@ import (
 	"gopkg.in/tucnak/telebot.v3/layout"
 	"math/rand"
 	"streamtg/go-log"
-	"streamtg/model"
+	"streamtg/minidb"
 	"time"
 )
 
 type Service struct {
-	Bot  *Bot
-	DB   *model.Model
-	Loc  *time.Location
-	Rand *rand.Rand
+	Bot    *Bot
+	MiniDB *minidb.Pudge
+	Loc    *time.Location
+	Rand   *rand.Rand
 }
 
 type Bot struct {

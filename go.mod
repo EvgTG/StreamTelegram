@@ -24,6 +24,7 @@ require (
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/recoilme/pudge v1.0.3 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/stretchr/testify v1.7.1 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
