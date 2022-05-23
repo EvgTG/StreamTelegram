@@ -1,7 +1,9 @@
 settings:
   offline: false
 commands:
-  /start: Привет!
+  /status: Статус работы
+  /adm: Команды админки
+  /set_channel: Установить канал
 buttons:
   test:
     unique: test

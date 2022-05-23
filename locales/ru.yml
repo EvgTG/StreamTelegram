@@ -1,1 +1,3 @@
-start: Привет, {{.FirstName}}!
+start: Привет, жми /adm и /set_commands
+set_channel_empty: "Напиши команду со ссылкой на профиль, например:\n\n/set_channel https://www.youtube.com/c/youtube."
+get_channel_empty: "Напиши команду со ссылкой на профиль, например:\n\n/get_channel https://www.youtube.com/c/youtube."

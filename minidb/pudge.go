@@ -20,3 +20,25 @@ func NewDB() (*Pudge, error) {
 
 	return &p, nil
 }
+
+func (p *Pudge) SetChannelID(id string) error {
+	err := p.db.Set("id", id)
+	return err
+}
+
+func (p *Pudge) GetChannelID() (string, error) {
+	id := ""
+
+	err := p.db.Get("id", &id)
+	if err == pudge.ErrKeyNotFound {
+		return "", nil
+	}
+
+	return id, err
+}
+
+/*
+func (p *Pudge) name() error {
+	return err
+}
+*/

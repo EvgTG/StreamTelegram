@@ -14,7 +14,7 @@ func GetChannelIDByUrl(url string) (string, error) {
 		return "", eris.Wrap(err, "regexp.MatchString()")
 	}
 	if !ok {
-		return "", eris.New("404")
+		return "", eris.New("Неверный формат")
 	}
 
 	resp, err := http.Get(url)

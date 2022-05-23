@@ -13,16 +13,16 @@ TgSome            - команда
 TgSome+Update/Btn - кнопка обновления/обычная
 TgSome+Func       - логика работы
 Но они обязательны только все вместе
-
-Текст админки тут, пользовательское в локализациях
 */
 
 func (s *Service) TgStart(x tb.Context) (errReturn error) {
-	x.Send(s.Bot.Text(x, "start", x.Sender()), s.Bot.Markup(x, "remove_keyboard"))
+	if s.Bot.isNotAdmin(x) {
+		return
+	}
+
+	x.Send(s.Bot.Text(x, "start"), s.Bot.Markup(x, "remove_keyboard"))
 	return
 }
-
-// Ниже только админское
 
 func (s *Service) TgTest(x tb.Context) (errReturn error) {
 	if s.Bot.isNotAdmin(x) {
@@ -83,8 +83,15 @@ func (s *Service) TgStatusUpdate(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
-	text := fmt.Sprintf("Запущен: %s\nUptime: %s",
-		s.Bot.Uptime.In(s.Loc).Format("2006.01.02 15:04:05 MST"), s.Bot.uptimeString(s.Bot.Uptime))
+	channelID, err := s.MiniDB.GetChannelID()
+	if err != nil {
+		log.Error(eris.Wrap(err, "s.MiniDB.GetChannelID()"))
+	}
+
+	text := fmt.Sprintf("Запущен: %s\nUptime: %s\n\nChannel ID: %s",
+		s.Bot.Uptime.In(s.Loc).Format("2006.01.02 15:04:05 MST"), s.Bot.uptimeString(s.Bot.Uptime),
+		channelID,
+	)
 
 	rm := s.Bot.Markup(x, "status")
 
@@ -146,7 +153,7 @@ func (s *Service) TgSetCommands(x tb.Context) (errReturn error) {
 
 	err := x.Bot().SetCommands(s.Bot.Layout.Commands())
 	if err != nil {
-		x.Send(eris.Wrap(err, "x.Bot().SetCommands()"))
+		x.Send(eris.Wrap(err, "x.Bot().SetCommands()").Error())
 		return
 	}
 
