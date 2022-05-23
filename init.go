@@ -1,81 +1,100 @@
 package main
 
 import (
-	"StreamTelegram/go-config"
-	"StreamTelegram/go-log"
-	"StreamTelegram/mainpac"
-	"StreamTelegram/model"
-	"StreamTelegram/mongodb"
+	"fmt"
+	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/rotisserie/eris"
 	"go.uber.org/fx"
+	tb "gopkg.in/tucnak/telebot.v3"
+	"gopkg.in/tucnak/telebot.v3/layout"
+	"math/rand"
+	"net/http"
+	"streamtg/go-log"
+	"streamtg/mainpac"
+	"streamtg/model"
+	"streamtg/mongodb"
+	"streamtg/util"
 	"time"
 )
 
 func New() (app *fx.App) {
 	app = fx.New(
 		fx.Provide(
-			Config,
 			NewDB,
 			NewService,
 		),
 
 		fx.Invoke(
+			ReadConfig,
 			Logger,
+			PingServe,
 			Start,
 		),
 	)
 	return
 }
 
-func Config() *config.Config {
-	conf := config.New()
-	return conf
-}
-
-func Logger(conf *config.Config) {
-	logLevel := conf.GetString("LOGLVL")
-	log.SetLogger(log.New(logLevel))
-}
-
-func NewDB(conf *config.Config) *model.Model {
-	return model.New(mongodb.NewDB(conf.GetString("NAMEDB"), conf.GetString("MONGOURL")))
-}
-
-func NewService(conf *config.Config, db *model.Model) *mainpac.Service {
-	loc, err := conf.GetTimeLocation("LOC")
+func ReadConfig() {
+	err := cleanenv.ReadConfig("files/cfg.env", &CFG)
 	if err != nil {
-		mainpac.Fatal("main.NewService - time zone time.LoadLocation()", err)
+		panic(eris.Wrap(err, "ReadConfig"))
+	}
+}
+
+func Logger() {
+	log.SetLogger(log.New(CFG.LogLevel, true))
+	log.Info("Go!")
+}
+
+func NewDB() *model.Model {
+	return model.New(mongodb.NewDB(CFG.NameDB, CFG.MongoUrl))
+}
+
+func NewService(db *model.Model) *mainpac.Service {
+	lt, err := layout.New("mainpac/bot.yml")
+	util.ErrCheckFatal(err, "layout.New()", "NewService", "init")
+	bot, err := tb.NewBot(tb.Settings{
+		Token:  CFG.TgApiToken,
+		Poller: &tb.LongPoller{Timeout: 30 * time.Second},
+	})
+	util.ErrCheckFatal(err, "tb.NewBot()", "NewService", "init")
+	bot.Use(lt.Middleware("ru"))
+
+	service := &mainpac.Service{
+		Bot: &mainpac.Bot{
+			Bot:           bot,
+			Layout:        lt,
+			Username:      bot.Me.Username,
+			UserList:      CFG.UserList,
+			AdminList:     CFG.AdminList,
+			NotifyList:    CFG.NotifyList,
+			ErrorList:     CFG.ErrorList,
+			Uptime:        time.Now(),
+			CallbackQuery: make(map[int64]string, 0),
+		},
+		DB:   db,
+		Loc:  CFG.TimeLocation.Get(),
+		Rand: rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 
-	var cycleTime time.Duration
-	cycleTimeInt := conf.GetInt64("CYCLETIME")
-	if cycleTimeInt == 0 {
-		cycleTime = time.Duration(3) * time.Minute
-	} else {
-		cycleTime = time.Duration(cycleTimeInt) * time.Minute
-	}
-
-	cfg := mainpac.InitConfig{
-		Proxy:              conf.GetString("PROXY"),
-		TgApiToken:         conf.GetString("TOKEN"),
-		TOID:               conf.GetIntSlice64("TOID"),
-		ErrorToID:          conf.GetInt64("ERRORTOID"),
-		UserList:           conf.GetIntSlice64("USERLIST"),
-		ChannelID:          conf.GetString("CHANNELID"),
-		YTApiKey:           conf.GetString("YTAPIKEY"),
-		Loc:                loc,
-		LanguageOFText:     conf.GetString("LANGUAGETEXT"),
-		CycleTime:          cycleTime,
-		TimeFormatWithCity: conf.GetBool("TIMECITY"),
-	}
-
-	service, err := mainpac.New(cfg, db)
-	if err != nil {
-		mainpac.Fatal("main.NewService - mainpac.New()", err)
-	}
 	return service
 }
 
-func Start(service *mainpac.Service) {
-	go service.StartTG()
-	service.StartYT()
+func Start(s *mainpac.Service) {
+	s.Start()
+}
+
+func PingServe() {
+	if !CFG.PingOn {
+		log.Info("PingServer off")
+		return
+	}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/pingstreamtg", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "pong")
+	})
+	log.Info("PingServer on")
+	go http.ListenAndServe(":"+CFG.PingPort, mux)
 }

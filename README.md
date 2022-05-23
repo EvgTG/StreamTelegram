@@ -1,43 +1,36 @@
 # StreamTelegram
 Notifications about YouTube streams in Telegram.  
-Shit, needs rewriting.
+Уведомления о YouTube стримах в Телеграм.
 ### Docker
-`docker build -t streamtelegram .`  
-`docker run -d -v /path/env/:/app/files/ --net=host --name streamtg streamtelegram`  
-### Environment
-required parameters - *
-* CONFIG_NAME* (env file)
-* LOGLVL (panic, fatal, error, warn or warning, info, debug, trace)
-* NAMEDB* (Database name)
-* MONGOURL* (Database url)
-* PROXY (telegram bot, socks5://login:pass@ip:port)
-* TOKEN* (telegram bot api token)
-* USERLIST* (user IDs, "id,id,id")
-* TOID* (chat where messages will be sent)
-* ERRORTOID* (chat with logs)
-* YTAPIKEY* (youtube api key)
-* CHANNELID* (youtube channel id. For example UC2_vpnza621Sa0cf_xhqJ8Q)
-* LOC (time zone, default - UTC, tzdata)
-* LANGUAGETEXT (language of text, rus or eng, default - eng)
-* CYClETIME (channel check time in minutes, default - 3 min)
-### Telegram bot commands
-* status - uptime & number of RSS check iterations
-* search - search channel id by the link to the video ("/seach url" or "/seach" response to a link)
-* lastrss - last RSS received
-* getrss - getting an rss feed by channel id
-* settings - settings
-* toid - edit targets for notifications 
-* cycletime - change the channel check time
-#### BotFather commands
-status - uptime & N iterations  
-search - [URL] search channel  
-lastrss - last RSS received  
-getrss - [channel ID] get rss feed  
-settings - settings
-
-### Folders
-
 ```
-files/
-    cfg.env
+docker build -t streamtelegram .  
+docker run -d -v /path/files/:/app/files/ --net=host --name stg streamtelegram
+```
+### Environment
+обязательные - *
+* LOGLVL (panic, fatal, error, warn or warning, info, debug, trace. По дефолту info)
+* NAMEDB* (Database name)
+* MONGOURL* (Ссылка для подключения mongodb)
+* TOKENTG* (telegram bot api token)
+* USERLIST*,ADMINLIST*,NOTIFYLIST*,ERRORLIST* (user IDs - "id,id,id")
+* LOC (локация для времени, смотреть tzdata)
+* PINGPORT (Порт для проверки работоспособности бота, например UptimeRobot. Пример ссылки по которой будет доступ - "http://[ip]:6975/pingLaurene", отсутствие PINGPORT - сервер для пинга не запуститься.)
+
+Пример:  
+LOGLVL=INFO  
+TOKENTG=19209:AAFSsiJY  
+MONGOURL=mongodb://log:pass@127.0.0.1:27017  
+NAMEDB=streamtg  
+USERLIST=123456789,352536  
+ADMINLIST=123456789,352536  
+NOTIFYLIST=123456789,352536  
+ERRORLIST=123456789,352536  
+LOC=Europe/Moscow  
+PINGPORT=6975
+
+### Папки
+```
+files/          (папка и рабочее место бота)
+    cfg.env     (конфиг)
+    logrus.log  (файл логов)
 ```

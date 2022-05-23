@@ -45,12 +45,14 @@ func Printf(format string, args ...interface{}) {
 func Warnf(format string, args ...interface{}) {
 	if logger != nil {
 		logger.Warnf(format, args...)
+		errsNotif.i++
 	}
 }
 
 func Errorf(format string, args ...interface{}) {
 	if logger != nil {
 		logger.Errorf(format, args...)
+		errsNotif.i++
 	}
 }
 
@@ -85,11 +87,13 @@ func Info(args ...interface{}) {
 func Warn(args ...interface{}) {
 	if logger != nil {
 		logger.Warn(args...)
+		errsNotif.i++
 	}
 }
 func Error(args ...interface{}) {
 	if logger != nil {
 		logger.Error(args...)
+		errsNotif.i++
 	}
 }
 func Fatal(args ...interface{}) {
@@ -102,5 +106,3 @@ func Panic(args ...interface{}) {
 		logger.Panic(args...)
 	}
 }
-
-// author github.com/rmukhamet/

@@ -1,146 +1,57 @@
 package mainpac
 
 import (
-	"StreamTelegram/model"
-	"context"
-	"crypto/tls"
 	"fmt"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/mmcdole/gofeed"
-	"google.golang.org/api/option"
-	"google.golang.org/api/youtube/v3"
-	"net/http"
-	"net/url"
+	tb "gopkg.in/tucnak/telebot.v3"
+	"gopkg.in/tucnak/telebot.v3/layout"
+	"math/rand"
+	"streamtg/go-log"
+	"streamtg/model"
 	"time"
 )
 
 type Service struct {
-	tg         *tg
-	yt         *yt
-	db         *model.Model
-	loc        *time.Location
-	timeFormat string
-	envVars    envVars
+	Bot  *Bot
+	DB   *model.Model
+	Loc  *time.Location
+	Rand *rand.Rand
 }
 
-type tg struct {
-	tgBot            *tgbotapi.BotAPI
-	updateConfig     tgbotapi.UpdateConfig
-	toID             []int64
-	errorToID        int64
-	userList         []int64
-	numberIterations int
-	uptime           time.Time
-	callbackQuery    string
+type Bot struct {
+	*tb.Bot
+	*layout.Layout
+
+	UserList   []int64
+	AdminList  []int64
+	NotifyList []int64
+	ErrorList  []int64
+
+	Username string
+	Uptime   time.Time
+
+	CallbackQuery map[int64]string //контекстный ввод
 }
 
-type yt struct {
-	yts       *youtube.Service
-	channelID string
-	texts     map[string]string
-	CycleTime time.Duration
-	stop      int8
-	stopch    chan bool
-	lastRSS   gofeed.Feed
-	lastTime  time.Time
+func (s Service) Start() {
+	log.Info("tgbot init")
+	s.InitBot()
+	log.Info("tgbot launch...")
+	fmt.Println("tgbot @" + s.Bot.Me.Username)
+	go s.GoCheckErrs()
+	s.Bot.Start()
 }
 
-type InitConfig struct {
-	Proxy, TgApiToken   string
-	TOID                []int64
-	ErrorToID           int64
-	UserList            []int64
-	ChannelID, YTApiKey string
-	Loc                 *time.Location
-	LanguageOFText      string
-	CycleTime           time.Duration
-	TimeFormatWithCity  bool
-}
-
-type envVars struct {
-	toID      []int64
-	cycleTime time.Duration
-}
-
-func New(cfg InitConfig, db *model.Model) (*Service, error) {
-	var err error
-
-	//Telegram
-	client := &http.Client{
-		Timeout: time.Second * 60,
+func (s Service) GoCheckErrs() {
+	time.Sleep(time.Second * 30)
+	nErr := log.GetErrN()
+	if nErr > 0 {
+		s.Bot.sendToSlice(s.Bot.ErrorList, fmt.Sprintf("Новых ошибок: %v.\n Заляните в логи.", nErr))
 	}
-	if cfg.Proxy != "" {
-		proxyURL, err := url.Parse(cfg.Proxy)
-		if err != nil {
-			return nil, fmt.Errorf("mainpac.New - proxy url.Parse(): %s", err)
-		}
-		client.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			Proxy:           http.ProxyURL(proxyURL),
+
+	for range time.Tick(time.Minute * 5) {
+		nErr = log.GetErrN()
+		if nErr > 0 {
+			s.Bot.sendToSlice(s.Bot.ErrorList, fmt.Sprintf("Новых ошибок: %v.\n Заляните в логи.", nErr))
 		}
 	}
-
-	tgBot, err := tgbotapi.NewBotAPIWithClient(cfg.TgApiToken, "https://api.telegram.org/bot%s/%s", client)
-	if err != nil {
-		return nil, fmt.Errorf("mainpac.New - tgbotapi.NewBotAPIWithClient(): %s", err)
-	}
-
-	tgBot.Debug = false
-
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-
-	//YouTube
-	ctx := context.Background()
-	yts, err := youtube.NewService(ctx, option.WithAPIKey(cfg.YTApiKey))
-	if err != nil {
-		return nil, fmt.Errorf("mainpac.New - youtube.NewService(): %s", err)
-	}
-
-	timeFormat := ""
-	if cfg.TimeFormatWithCity {
-		timeFormat = "2 Jan 15:04 MST"
-	} else {
-		timeFormat = "2 Jan 15:04"
-	}
-
-	service := &Service{
-		tg: &tg{
-			tgBot:            tgBot,
-			updateConfig:     u,
-			toID:             cfg.TOID,
-			errorToID:        cfg.ErrorToID,
-			userList:         cfg.UserList,
-			numberIterations: 0,
-			uptime:           time.Now(),
-			callbackQuery:    "",
-		},
-		yt: &yt{
-			yts:       yts,
-			channelID: cfg.ChannelID,
-			texts:     GetTexts(cfg.LanguageOFText),
-			CycleTime: cfg.CycleTime,
-			stop:      0,
-			stopch:    make(chan bool),
-			lastRSS:   gofeed.Feed{},
-			lastTime:  time.Time{},
-		},
-		db:  db,
-		loc: cfg.Loc,
-		envVars: envVars{
-			toID:      cfg.TOID,
-			cycleTime: cfg.CycleTime,
-		},
-		timeFormat: timeFormat,
-	}
-
-	st := db.GetLs()
-	if st.DBPriority.ToIDBL {
-		service.tg.toID = st.DBPriority.ToID
-	}
-	if st.DBPriority.CycleTimeBL {
-		service.yt.CycleTime = st.DBPriority.CycleTime
-	}
-
-	return service, nil
 }

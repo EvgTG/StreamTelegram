@@ -1,0 +1,31 @@
+settings:
+  offline: false
+commands:
+  /start: Привет!
+buttons:
+  test:
+    unique: test
+    text: Test
+  delete:
+    unique: delete
+    text: 🗑Удалить
+  cancel:
+    text: ❌Отмена
+  status_update:
+    unique: status_update
+    text: 🔄Обновить
+  get_logs:
+    unique: get_logs
+    text: 1
+  clear_logs:
+    unique: clear_logs
+    text: 2
+markups:
+  remove_keyboard:
+    remove_keyboard: true
+  test:
+    - [ test ]
+  logs:
+    - [ get_logs, clear_logs ]
+  status:
+    - [ status_update ]

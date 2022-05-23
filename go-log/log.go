@@ -2,29 +2,36 @@ package log
 
 import (
 	"github.com/sirupsen/logrus"
+	"os"
 )
 
 const defaultLogLevel = logrus.WarnLevel
 
-//New logger
-func New(logLevel string) Logger {
-	// control the log level
+func New(logLevel string, toFile bool) Logger {
+	logger := logrus.New()
+
 	if logLevel != "" {
 		level, err := logrus.ParseLevel(logLevel)
-
 		if err != nil {
 			logrus.Errorf("the configured log level string is incorrect levelStr=%s error=%s", logLevel, err)
-			logrus.SetLevel(defaultLogLevel)
+			logger.SetLevel(defaultLogLevel)
 			logrus.Warnf("using %s level instead", defaultLogLevel)
 		} else {
 			logrus.Info("Setting log level to " + logLevel)
-			logrus.SetLevel(level)
+			logger.SetLevel(level)
 		}
 	} else {
-		// set to default log level
-		logrus.SetLevel(defaultLogLevel)
+		logger.SetLevel(defaultLogLevel)
 	}
-	return logrus.StandardLogger()
-}
 
-// author github.com/rmukhamet/
+	if toFile {
+		file, err := os.OpenFile("files/logrus.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err == nil {
+			logger.SetOutput(file)
+		} else {
+			panic(err)
+		}
+	}
+
+	return logger
+}
