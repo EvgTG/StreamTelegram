@@ -4,10 +4,19 @@ import (
 	"github.com/rotisserie/eris"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
 func GetChannelIDByUrl(url string) (string, error) {
+	ok, err := regexp.MatchString("^https://www.youtube.com/(channel|c)/", url)
+	if err != nil {
+		return "", eris.Wrap(err, "regexp.MatchString()")
+	}
+	if !ok {
+		return "", eris.New("404")
+	}
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", eris.Wrap(err, "http.Get(url)")
