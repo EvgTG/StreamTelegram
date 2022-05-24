@@ -1,3 +1,6 @@
 start: Привет, жми /adm и /set_commands
-set_channel_empty: "Напиши команду со ссылкой на профиль, например:\n\n/set_channel https://www.youtube.com/c/youtube."
-get_channel_empty: "Напиши команду со ссылкой на профиль, например:\n\n/get_channel https://www.youtube.com/c/youtube."
+set_channel_empty: "Напиши команду со ссылкой на профиль, например:\n\n<code>/set_channel https://www.youtube.com/c/youtube</code>."
+get_channel_empty: "Напиши команду со ссылкой на профиль, например:\n\n<code>/get_channel https://www.youtube.com/c/youtube</code>."
+set_dur: "Напиши команду с количеством минут одного цикла проверки канала, например:\n\n<code>/set_dur 3</code>"
+err_format: Неверный формат!
+done: Сделано.

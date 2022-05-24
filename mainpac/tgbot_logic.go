@@ -49,12 +49,12 @@ func (s *Service) TgAdm(x tb.Context) (errReturn error) {
 	}
 
 	text := fmt.Sprintf("" +
-		"<b>Пользователькие команды:</b>" +
 		"\n/start - приветствие" +
-		"\n\n<b>Админские команды:</b>" +
 		"\n/status - статус работы" +
 		"\n/logs - действия над логами" +
-		"\n/setCommands - установить меню бота",
+		"\n/set_commands - установить меню бота" +
+		"\n/set_channel - установить канал" +
+		"\n/set_dur - время обновления информации",
 	)
 
 	x.Send(text, tb.ModeHTML)
@@ -83,14 +83,9 @@ func (s *Service) TgStatusUpdate(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
-	channelID, err := s.MiniDB.GetChannelID()
-	if err != nil {
-		log.Error(eris.Wrap(err, "s.MiniDB.GetChannelID()"))
-	}
-
-	text := fmt.Sprintf("Запущен: %s\nUptime: %s\n\nChannel ID: %s",
+	text := fmt.Sprintf("Запущен: %s\nUptime: %s\n\nChannel ID: %s\nCycle duration: %vmin",
 		s.Bot.Uptime.In(s.Loc).Format("2006.01.02 15:04:05 MST"), s.Bot.uptimeString(s.Bot.Uptime),
-		channelID,
+		s.YouTube.ChannelID, s.YouTube.CycleDuration,
 	)
 
 	rm := s.Bot.Markup(x, "status")

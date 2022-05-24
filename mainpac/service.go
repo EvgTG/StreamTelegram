@@ -15,6 +15,13 @@ type Service struct {
 	MiniDB *minidb.Pudge
 	Loc    *time.Location
 	Rand   *rand.Rand
+
+	YouTube *YouTube
+}
+
+type YouTube struct {
+	ChannelID     string
+	CycleDuration int // minutes
 }
 
 type Bot struct {

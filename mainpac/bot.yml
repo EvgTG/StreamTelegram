@@ -4,6 +4,7 @@ commands:
   /status: Статус работы
   /adm: Команды админки
   /set_channel: Установить канал
+  /set_dur: Время обновления информации
 buttons:
   test:
     unique: test

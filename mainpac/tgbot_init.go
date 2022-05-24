@@ -17,6 +17,7 @@ func (s *Service) InitBot() {
 	s.Bot.Handle("/set_commands", s.TgSetCommands)
 	s.Bot.Handle("/set_channel", s.TgSetChannelID)
 	s.Bot.Handle("/get_channel", s.TgGetChannelID)
+	s.Bot.Handle("/set_dur", s.TgSetCycleDuration)
 	s.Bot.Handle(tb.OnText, s.TgCallbackQuery)
 
 	// Кнопки

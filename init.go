@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/recoilme/pudge"
 	"github.com/rotisserie/eris"
 	"go.uber.org/fx"
 	tb "gopkg.in/tucnak/telebot.v3"
@@ -61,6 +62,16 @@ func NewService(db *minidb.Pudge) *mainpac.Service {
 	util.ErrCheckFatal(err, "tb.NewBot()", "NewService", "init")
 	bot.Use(lt.Middleware("ru"))
 
+	channelID, err := db.GetChannelID()
+	util.ErrCheckFatal(err, "db.GetChannelID()", "NewService", "init")
+
+	cycleDuration, err := db.GetCycleDuration()
+	if err == pudge.ErrKeyNotFound {
+		cycleDuration = 5
+		err = nil
+	}
+	util.ErrCheckFatal(err, "db.GetCycleDuration()", "NewService", "init")
+
 	service := &mainpac.Service{
 		Bot: &mainpac.Bot{
 			Bot:           bot,
@@ -76,6 +87,11 @@ func NewService(db *minidb.Pudge) *mainpac.Service {
 		MiniDB: db,
 		Loc:    CFG.TimeLocation.Get(),
 		Rand:   rand.New(rand.NewSource(time.Now().UnixNano())),
+
+		YouTube: &mainpac.YouTube{
+			ChannelID:     channelID,
+			CycleDuration: cycleDuration,
+		},
 	}
 
 	return service

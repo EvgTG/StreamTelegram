@@ -37,6 +37,19 @@ func (p *Pudge) GetChannelID() (string, error) {
 	return id, err
 }
 
+func (p *Pudge) SetCycleDuration(dur int) error {
+	err := p.db.Set("dur", dur)
+	return err
+}
+
+func (p *Pudge) GetCycleDuration() (int, error) {
+	dur := 0
+
+	err := p.db.Get("dur", &dur)
+
+	return dur, err
+}
+
 /*
 func (p *Pudge) name() error {
 	return err
