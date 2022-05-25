@@ -54,7 +54,10 @@ func (s *Service) TgAdm(x tb.Context) (errReturn error) {
 		"\n/logs - действия над логами" +
 		"\n/set_commands - установить меню бота" +
 		"\n/set_channel - установить канал" +
-		"\n/set_dur - время обновления информации",
+		"\n/get_channel - получить id канала" +
+		"\n/set_dur - время обновления информации" +
+		"\n/locs - настройка часовых поясов в уведомлениях" +
+		"\n/set_loc - добавить часовой пояс",
 	)
 
 	x.Send(text, tb.ModeHTML)
@@ -67,7 +70,7 @@ func (s *Service) TgStatus(x tb.Context) (errReturn error) {
 	}
 
 	text, rm := s.TgStatusFunc(x)
-	x.Send(text, rm)
+	x.Send(text, rm, tb.ModeHTML)
 	return
 }
 
@@ -77,15 +80,15 @@ func (s *Service) TgStatusUpdate(x tb.Context) (errReturn error) {
 	}
 
 	text, rm := s.TgStatusFunc(x)
-	s.Bot.Edit(x.Message(), text, rm)
+	s.Bot.Edit(x.Message(), text, rm, tb.ModeHTML)
 	x.Respond(&tb.CallbackResponse{CallbackID: x.Callback().ID, Text: "Обновлено"})
 	return
 }
 
 func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
-	text := fmt.Sprintf("Запущен: %s\nUptime: %s\n\nChannel ID: %s\nCycle duration: %vmin",
+	text := fmt.Sprintf("Запущен: %s\nUptime: %s\n\nChannel ID: <a href=\"youtube.com/channel/%s\">%s</a>\nCycle duration: %vmin",
 		s.Bot.Uptime.In(s.Loc).Format("2006.01.02 15:04:05 MST"), s.Bot.uptimeString(s.Bot.Uptime),
-		s.YouTube.ChannelID, s.YouTube.CycleDuration,
+		s.YouTube.ChannelID, s.YouTube.ChannelID, s.YouTube.CycleDuration,
 	)
 
 	rm := s.Bot.Markup(x, "status")

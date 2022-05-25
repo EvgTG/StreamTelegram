@@ -74,6 +74,12 @@ func NewService(db *minidb.Pudge) *mainpac.Service {
 	}
 	util.ErrCheckFatal(err, "db.GetCycleDuration()", "NewService", "init")
 
+	locs, err := db.GetLocs()
+	util.ErrCheckFatal(err, "db.GetLocs()", "NewService", "init")
+
+	timeWithCity, err := db.GetTimeWithCity()
+	util.ErrCheckFatal(err, "db.GetTimeWithCity())", "NewService", "init")
+
 	service := &mainpac.Service{
 		Bot: &mainpac.Bot{
 			Bot:           bot,
@@ -99,6 +105,9 @@ func NewService(db *minidb.Pudge) *mainpac.Service {
 				Start:    lt.TextLocale("ru", "live_go"),
 				End:      lt.TextLocale("ru", "end"),
 			},
+			Locs:       locs,
+			TimeFormat: mainpac.TimeFormatCity(timeWithCity),
+			TimeCity:   timeWithCity,
 		},
 	}
 

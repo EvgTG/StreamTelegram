@@ -23,7 +23,17 @@ type YouTube struct {
 	ChannelID     string
 	CycleDuration int // minutes
 
-	Text Text
+	Text       Text
+	Locs       []string
+	TimeFormat string
+	TimeCity   bool
+}
+
+func TimeFormatCity(withCity bool) string {
+	if withCity {
+		return "2 Jan 15:04 MST"
+	}
+	return "2 Jan 15:04"
 }
 
 type Text struct {
