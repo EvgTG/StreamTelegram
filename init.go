@@ -53,6 +53,7 @@ func NewDB() *minidb.Pudge {
 }
 
 func NewService(db *minidb.Pudge) *mainpac.Service {
+	// Telegram
 	lt, err := layout.New("mainpac/bot.yml")
 	util.ErrCheckFatal(err, "layout.New()", "NewService", "init")
 	bot, err := tb.NewBot(tb.Settings{
@@ -62,6 +63,7 @@ func NewService(db *minidb.Pudge) *mainpac.Service {
 	util.ErrCheckFatal(err, "tb.NewBot()", "NewService", "init")
 	bot.Use(lt.Middleware("ru"))
 
+	// YouTube
 	channelID, err := db.GetChannelID()
 	util.ErrCheckFatal(err, "db.GetChannelID()", "NewService", "init")
 
@@ -91,6 +93,12 @@ func NewService(db *minidb.Pudge) *mainpac.Service {
 		YouTube: &mainpac.YouTube{
 			ChannelID:     channelID,
 			CycleDuration: cycleDuration,
+			Text: mainpac.Text{
+				Live:     lt.TextLocale("ru", "live"),
+				Upcoming: lt.TextLocale("ru", "upcoming"),
+				Start:    lt.TextLocale("ru", "live_go"),
+				End:      lt.TextLocale("ru", "end"),
+			},
 		},
 	}
 

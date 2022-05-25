@@ -22,6 +22,12 @@ type Service struct {
 type YouTube struct {
 	ChannelID     string
 	CycleDuration int // minutes
+
+	Text Text
+}
+
+type Text struct {
+	Live, Upcoming, Start, End string
 }
 
 type Bot struct {
