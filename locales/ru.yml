@@ -2,7 +2,7 @@ start: "Привет, жми /adm и /set_commands"
 set_channel_empty: "Напиши команду со ссылкой на профиль, например:\n\n<code>/set_channel https://www.youtube.com/c/youtube</code>."
 get_channel_empty: "Напиши команду со ссылкой на профиль, например:\n\n<code>/get_channel https://www.youtube.com/c/youtube</code>."
 set_dur: "Напиши команду с количеством минут одного цикла проверки канала, например:\n\n<code>/set_dur 3</code>"
-set_loc: "У уведомлений к запланированным стримам будет написано время начала. <a href=\"https://en.wikipedia.org/wiki/List_of_tz_database_time_zones\">Выберете город</a> с нужным временем и введите его с командой, например:\n\n/set_loc America/New_York"
+set_loc: "У уведомлений к запланированным стримам будет написано время начала. <a href=\"https://en.wikipedia.org/wiki/List_of_tz_database_time_zones\">Выберете город</a> с нужным временем и введите его с командой, например:\n\n<code>/set_loc America/New_York</code>"
 err_format: "Неверный формат!"
 done: "Сделано."
 

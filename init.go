@@ -57,8 +57,9 @@ func NewService(db *minidb.Pudge) *mainpac.Service {
 	lt, err := layout.New("bot.yml")
 	util.ErrCheckFatal(err, "layout.New()", "NewService", "init")
 	bot, err := tb.NewBot(tb.Settings{
-		Token:  CFG.TgApiToken,
-		Poller: &tb.LongPoller{Timeout: 30 * time.Second},
+		Token:     CFG.TgApiToken,
+		Poller:    &tb.LongPoller{Timeout: 30 * time.Second},
+		ParseMode: tb.ModeHTML,
 	})
 	util.ErrCheckFatal(err, "tb.NewBot()", "NewService", "init")
 	bot.Use(lt.Middleware("ru"))

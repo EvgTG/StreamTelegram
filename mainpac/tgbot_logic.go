@@ -29,7 +29,7 @@ func (s *Service) TgTest(x tb.Context) (errReturn error) {
 		return
 	}
 
-	x.Send("Test", s.Bot.Markup(x, "test"), tb.ModeHTML, tb.NoPreview)
+	x.Send("Test", s.Bot.Markup(x, "test"), tb.NoPreview)
 	return
 }
 
@@ -38,7 +38,7 @@ func (s *Service) TgTestBtn(x tb.Context) (errReturn error) {
 		return
 	}
 
-	x.Send("Test", &tb.SendOptions{ReplyTo: x.Message()}, s.Bot.Markup(x, "test"), tb.ModeHTML, tb.NoPreview)
+	x.Send("Test", &tb.SendOptions{ReplyTo: x.Message()}, s.Bot.Markup(x, "test"), tb.NoPreview)
 	x.Respond(&tb.CallbackResponse{CallbackID: x.Callback().ID, Text: "test"})
 	return
 }
@@ -60,7 +60,7 @@ func (s *Service) TgAdm(x tb.Context) (errReturn error) {
 		"\n/set_loc - добавить часовой пояс",
 	)
 
-	x.Send(text, tb.ModeHTML)
+	x.Send(text)
 	return
 }
 
@@ -113,7 +113,7 @@ func (s *Service) TgLogs(x tb.Context) (errReturn error) {
 	}
 
 	text := "1. Получить файл логов\n2. Очистить файл логов"
-	x.Send(text, s.Bot.Markup(x, "logs"), tb.ModeHTML)
+	x.Send(text, s.Bot.Markup(x, "logs"))
 	return
 }
 

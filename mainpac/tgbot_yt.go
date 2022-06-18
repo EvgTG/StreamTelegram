@@ -16,7 +16,7 @@ func (s *Service) TgSetChannelID(x tb.Context) (errReturn error) {
 	}
 
 	if x.Text() == "/set_channel" {
-		x.Send(s.Bot.Text(x, "set_channel_empty"), tb.ModeHTML)
+		x.Send(s.Bot.Text(x, "set_channel_empty"))
 		return
 	}
 
@@ -46,7 +46,7 @@ func (s *Service) TgGetChannelID(x tb.Context) (errReturn error) {
 	}
 
 	if x.Text() == "/set_channel" {
-		x.Send(s.Bot.Text(x, "get_channel_empty"), tb.ModeHTML)
+		x.Send(s.Bot.Text(x, "get_channel_empty"))
 		return
 	}
 
@@ -69,7 +69,7 @@ func (s *Service) TgSetCycleDuration(x tb.Context) (errReturn error) {
 	}
 
 	if x.Text() == "/set_dur" {
-		x.Send(s.Bot.Text(x, "set_dur"), tb.ModeHTML)
+		x.Send(s.Bot.Text(x, "set_dur"))
 		return
 	}
 
@@ -149,7 +149,7 @@ func (s *Service) TgSetLoc(x tb.Context) (errReturn error) {
 	}
 
 	if x.Text() == "/set_loc" || x.Callback() != nil {
-		x.Send(s.Bot.Text(x, "set_loc"), tb.ModeHTML, tb.NoPreview)
+		x.Send(s.Bot.Text(x, "set_loc"), tb.NoPreview)
 		x.Respond()
 		return
 	}

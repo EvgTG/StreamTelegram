@@ -16,7 +16,7 @@ func (bot *Bot) isNotAdmin(x tb.Context) bool {
 
 func (bot *Bot) sendToSlice(slice []int64, mesText string) {
 	for _, chatID := range slice {
-		bot.Send(&tb.User{ID: chatID}, mesText, tb.ModeHTML)
+		bot.Send(&tb.User{ID: chatID}, mesText)
 	}
 }
 
