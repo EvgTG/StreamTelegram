@@ -14,7 +14,6 @@ type InitConfig struct {
 	TgApiToken   string         `env:"TOKENTG"`
 	UserList     []int64        `env:"USERLIST"`
 	AdminList    []int64        `env:"ADMINLIST"`
-	NotifyList   []int64        `env:"NOTIFYLIST"`
 	ErrorList    []int64        `env:"ERRORLIST"`
 	TimeLocation MyTimeLocation `env:"LOC" env-default:"UTC"`
 

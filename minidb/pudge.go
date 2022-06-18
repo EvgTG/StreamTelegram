@@ -74,6 +74,25 @@ func (p *Pudge) GetTimeWithCity() (bool, error) {
 	return bl, err
 }
 
+type Channel struct {
+	ID          int64
+	EndOfStream bool
+}
+
+func (p *Pudge) SetNotifyList(list []Channel) error {
+	err := p.db.Set("notifylist", list)
+	return err
+}
+
+func (p *Pudge) GetNotifyList() ([]Channel, error) {
+	list := []Channel{}
+	err := p.db.Get("notifylist", &list)
+	if err == pudge.ErrKeyNotFound {
+		return list, nil
+	}
+	return list, err
+}
+
 /*
 func (p *Pudge) name() error {
 	return err

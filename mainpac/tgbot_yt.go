@@ -5,6 +5,7 @@ import (
 	"github.com/rotisserie/eris"
 	tb "gopkg.in/tucnak/telebot.v3"
 	"strconv"
+	"streamtg/minidb"
 	"streamtg/util"
 	"strings"
 	"time"
@@ -103,7 +104,6 @@ func (s *Service) TgLocsFunc(x tb.Context) (string, *tb.ReplyMarkup) {
 	}
 
 	rm := s.Bot.Layout.Markup(x, "locs")
-
 	return text, rm
 }
 
@@ -120,6 +120,7 @@ func (s *Service) TgLocsUpdateBtn(x tb.Context) (errReturn error) {
 	if s.Bot.isNotAdmin(x) {
 		return
 	}
+
 	x.Respond()
 	x.Edit(s.TgLocsFunc(x))
 	return
@@ -190,5 +191,127 @@ func (s *Service) TgLocsCity(x tb.Context) (errReturn error) {
 
 	x.Respond()
 	x.Edit(s.TgLocsFunc(x))
+	return
+}
+
+func (s *Service) TgNotify(x tb.Context) (errReturn error) {
+	if s.Bot.isNotAdmin(x) {
+		return
+	}
+
+	x.Send(s.TgNotifyFunc(x))
+	return
+}
+
+func (s *Service) TgNotifyUpdateBtn(x tb.Context) (errReturn error) {
+	if s.Bot.isNotAdmin(x) {
+		return
+	}
+
+	x.Respond()
+	x.Edit(s.TgNotifyFunc(x))
+	return
+}
+
+func (s *Service) TgNotifyFunc(x tb.Context) (string, *tb.ReplyMarkup) {
+	text := ""
+
+	for i, channel := range s.Bot.NotifyList {
+		text += fmt.Sprintf("%v. id: <code>%v</code> start", i+1, channel.ID)
+		if channel.EndOfStream {
+			text += " end"
+		}
+		text += "\n"
+	}
+
+	if len(s.Bot.NotifyList) == 0 {
+		text = s.Bot.TextLocale("ru", "notify_nil")
+	}
+
+	rm := s.Bot.Layout.Markup(x, "notify")
+	return text, rm
+}
+
+func (s *Service) TgNotifyAdd(x tb.Context) (errReturn error) {
+	if s.Bot.isNotAdmin(x) {
+		return
+	}
+
+	if x.Text() == "/notify_add" || x.Callback() != nil {
+		x.Send(s.Bot.Text(x, "notify_add"), tb.NoPreview)
+		x.Respond()
+		return
+	}
+
+	text := strings.Replace(x.Text(), "/notify_add ", "", 1)
+	text = strings.Replace(text, " ", "", -1)
+
+	end := strings.Contains(text, "end")
+	if end {
+		text = strings.Replace(text, "end", "", 1)
+	}
+
+	id, err := strconv.ParseInt(text, 10, 64)
+	if err != nil {
+		x.Send(eris.Wrap(err, "parse id").Error())
+		return
+	}
+
+	ch := minidb.Channel{
+		ID:          id,
+		EndOfStream: end,
+	}
+
+	s.Bot.NotifyList = append(s.Bot.NotifyList, ch)
+	err = s.MiniDB.SetNotifyList(s.Bot.NotifyList)
+	if err != nil {
+		x.Send(eris.Wrap(err, "SetNotifyList").Error())
+		return
+	}
+
+	x.Send(s.Bot.Text(x, "done"))
+	return
+}
+
+func (s *Service) TgNotifyDel(x tb.Context) (errReturn error) {
+	if s.Bot.isNotAdmin(x) {
+		return
+	}
+
+	if x.Text() == "/notify_del" || x.Callback() != nil {
+		x.Send(s.Bot.Text(x, "notify_del"), tb.NoPreview)
+		x.Respond()
+		return
+	}
+
+	text := strings.Replace(x.Text(), "/notify_del ", "", 1)
+	text = strings.Replace(text, " ", "", -1)
+
+	id, err := strconv.ParseInt(text, 10, 64)
+	if err != nil {
+		x.Send(eris.Wrap(err, "parse id").Error())
+		return
+	}
+
+	iForDel := -1
+	for i, channel := range s.Bot.NotifyList {
+		if channel.ID == id {
+			iForDel = i
+		}
+	}
+	if iForDel >= 0 {
+		s.Bot.NotifyList = append(s.Bot.NotifyList[:iForDel], s.Bot.NotifyList[iForDel+1:]...)
+	} else {
+		x.Send(s.Bot.Text(x, "notify_del_nil"))
+		return
+	}
+
+	err = s.MiniDB.SetNotifyList(s.Bot.NotifyList)
+	if err != nil {
+		x.Send(eris.Wrap(err, "SetNotifyList").Error())
+		return
+	}
+
+	x.Send(s.Bot.Text(x, "done"))
 	return
 }

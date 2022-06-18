@@ -17,6 +17,9 @@ func (s *Service) InitBot() {
 	s.Bot.Handle("/set_dur", s.TgSetCycleDuration)
 	s.Bot.Handle("/locs", s.TgLocs)
 	s.Bot.Handle("/set_loc", s.TgSetLoc)
+	s.Bot.Handle("/notify", s.TgNotify)
+	s.Bot.Handle("/notify_add", s.TgNotifyAdd)
+	s.Bot.Handle("/notify_del", s.TgNotifyDel)
 	s.Bot.Handle(tb.OnText, s.TgCallbackQuery)
 
 	// Кнопки
@@ -25,12 +28,18 @@ func (s *Service) InitBot() {
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "delete"), s.TgDeleteBtn)
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "cancel"), s.TgCancelReplyMarkup)
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "status_update"), s.TgStatusUpdate)
+
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "get_logs"), s.TgGetLogsBtn)
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "clear_logs"), s.TgClearLogsBtn)
+
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "set_loc"), s.TgSetLoc)
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "locs_update"), s.TgLocsUpdateBtn)
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "locs_clear"), s.TgLocsClearBtn)
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "time_city"), s.TgLocsCity)
+
+	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "notify_up"), s.TgNotifyUpdateBtn)
+	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "notify_add"), s.TgNotifyAdd)
+	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "notify_del"), s.TgNotifyDel)
 }
 
 /*

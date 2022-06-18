@@ -79,7 +79,10 @@ func NewService(db *minidb.Pudge) *mainpac.Service {
 	util.ErrCheckFatal(err, "db.GetLocs()", "NewService", "init")
 
 	timeWithCity, err := db.GetTimeWithCity()
-	util.ErrCheckFatal(err, "db.GetTimeWithCity())", "NewService", "init")
+	util.ErrCheckFatal(err, "db.GetTimeWithCity()", "NewService", "init")
+
+	notifyList, err := db.GetNotifyList()
+	util.ErrCheckFatal(err, "db.GetNotifyList()", "NewService", "init")
 
 	service := &mainpac.Service{
 		Bot: &mainpac.Bot{
@@ -88,7 +91,7 @@ func NewService(db *minidb.Pudge) *mainpac.Service {
 			Username:      bot.Me.Username,
 			UserList:      CFG.UserList,
 			AdminList:     CFG.AdminList,
-			NotifyList:    CFG.NotifyList,
+			NotifyList:    notifyList,
 			ErrorList:     CFG.ErrorList,
 			Uptime:        time.Now(),
 			CallbackQuery: make(map[int64]string, 0),

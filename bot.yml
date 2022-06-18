@@ -7,6 +7,7 @@ commands:
   /set_dur: Время обновления информации
   /locs: Часовые пояса
   /set_loc: Добавить часовой пояс
+  /notify: Каналы с уведомлениями
 buttons:
   test:
     unique: test
@@ -37,6 +38,15 @@ buttons:
   time_city:
     unique: time_city
     text: Указание города
+  notify_add:
+    unique: notify_add
+    text: Добавить канал
+  notify_del:
+    unique: notify_del
+    text: Удалить канал
+  notify_up:
+    unique: notify_up
+    text: Обновить
 markups:
   remove_keyboard:
     remove_keyboard: true
@@ -50,3 +60,6 @@ markups:
     - [ set_loc ]
     - [ locs_update, locs_clear ]
     - [ time_city ]
+  notify:
+    - [ notify_up ]
+    - [ notify_add, notify_del ]

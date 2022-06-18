@@ -46,7 +46,7 @@ type Bot struct {
 
 	UserList   []int64
 	AdminList  []int64
-	NotifyList []int64
+	NotifyList []minidb.Channel
 	ErrorList  []int64
 
 	Username string
