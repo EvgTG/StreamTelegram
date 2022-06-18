@@ -54,7 +54,7 @@ func NewDB() *minidb.Pudge {
 
 func NewService(db *minidb.Pudge) *mainpac.Service {
 	// Telegram
-	lt, err := layout.New("mainpac/bot.yml")
+	lt, err := layout.New("bot.yml")
 	util.ErrCheckFatal(err, "layout.New()", "NewService", "init")
 	bot, err := tb.NewBot(tb.Settings{
 		Token:  CFG.TgApiToken,
