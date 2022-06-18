@@ -45,7 +45,7 @@ func (s *Service) TgGetChannelID(x tb.Context) (errReturn error) {
 		return
 	}
 
-	if x.Text() == "/set_channel" {
+	if x.Text() == "/get_channel" {
 		x.Send(s.Bot.Text(x, "get_channel_empty"))
 		return
 	}
