@@ -24,7 +24,7 @@ func (bot *Bot) sendToSlice(slice []int64, mesText string) {
 func (bot *Bot) uptimeString(timestamp time.Time) string {
 	uptime := time.Since(timestamp).Round(time.Second)
 	hours, hoursStr := 0, ""
-	for uptime.Hours() > 24 {
+	for uptime.Hours() >= 24 {
 		uptime -= time.Hour * 24
 		hours++
 	}

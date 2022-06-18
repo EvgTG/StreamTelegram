@@ -70,7 +70,10 @@ func (s *Service) TgStatus(x tb.Context) (errReturn error) {
 	}
 
 	text, rm := s.TgStatusFunc(x)
-	x.Send(text, rm, tb.ModeHTML)
+	mes, err := s.Bot.Send(x.Sender(), text, rm)
+	if err == nil && mes != nil {
+		s.Bot.Pin(mes)
+	}
 	return
 }
 
@@ -80,7 +83,15 @@ func (s *Service) TgStatusUpdate(x tb.Context) (errReturn error) {
 	}
 
 	text, rm := s.TgStatusFunc(x)
-	s.Bot.Edit(x.Message(), text, rm, tb.ModeHTML)
+	_, err := s.Bot.Edit(x.Message(), text, rm)
+	if err != nil {
+		s.Bot.Delete(x.Message())
+		mes, err := s.Bot.Send(x.Sender(), text, rm)
+		if err == nil && mes != nil {
+			s.Bot.Pin(mes)
+		}
+	}
+
 	x.Respond(&tb.CallbackResponse{CallbackID: x.Callback().ID, Text: "Обновлено"})
 	return
 }
