@@ -12,5 +12,7 @@ RUN apk --no-cache add ca-certificates tzdata
 WORKDIR /app
 
 COPY --from=builder /app/bot .
+COPY --from=builder /app/bot.yml .
+COPY --from=builder /app/locales locales
 
 CMD ["./bot"]
