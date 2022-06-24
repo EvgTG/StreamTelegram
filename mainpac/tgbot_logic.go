@@ -99,7 +99,7 @@ func (s *Service) TgStatusUpdate(x tb.Context) (errReturn error) {
 func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
 	text := fmt.Sprintf("Запущен: %s\nUptime: %s\n\nChannel ID: <a href=\"youtube.com/channel/%s\">%s</a>\nCycle duration: %vmin",
 		s.Bot.Uptime.In(s.Loc).Format("2006.01.02 15:04:05 MST"), s.Bot.uptimeString(s.Bot.Uptime),
-		s.YouTube.ChannelID, s.YouTube.ChannelID, s.YouTube.CycleDuration,
+		s.YouTube.ChannelID, s.YouTube.ChannelID, s.YouTube.CycleDurationMinutes,
 	)
 
 	rm := s.Bot.Markup(x, "status")

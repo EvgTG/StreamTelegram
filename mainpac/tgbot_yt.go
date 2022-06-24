@@ -88,7 +88,7 @@ func (s *Service) TgSetCycleDuration(x tb.Context) (errReturn error) {
 		x.Send(eris.Wrap(err, "MiniDB.SetCycleDuration()").Error())
 		return
 	}
-	s.YouTube.CycleDuration = dur
+	s.YouTube.CycleDurationMinutes = dur
 
 	x.Send(s.Bot.Text(x, "done"))
 	return

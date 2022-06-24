@@ -2,11 +2,13 @@ package mainpac
 
 import (
 	"fmt"
+	"github.com/mmcdole/gofeed"
 	tb "gopkg.in/tucnak/telebot.v3"
 	"gopkg.in/tucnak/telebot.v3/layout"
 	"math/rand"
 	"streamtg/go-log"
 	"streamtg/minidb"
+	"sync"
 	"time"
 )
 
@@ -20,8 +22,17 @@ type Service struct {
 }
 
 type YouTube struct {
-	ChannelID     string
-	CycleDuration int // minutes
+	Parser *gofeed.Parser
+
+	LastTime         time.Time
+	NumberIterations int
+
+	PauseMutex       sync.Mutex
+	Pause            int // 0 false 1 true 2 true & wait
+	PauseWaitChannel chan struct{}
+
+	ChannelID            string
+	CycleDurationMinutes int // minutes
 
 	Text       Text
 	Locs       []string
