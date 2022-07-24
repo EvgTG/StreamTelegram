@@ -97,9 +97,26 @@ func (s *Service) TgStatusUpdate(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
-	text := fmt.Sprintf("Запущен: %s\nUptime: %s\n\nChannel ID: <a href=\"youtube.com/channel/%s\">%s</a>\nCycle duration: %vmin",
-		s.Bot.Uptime.In(s.Loc).Format("2006.01.02 15:04:05 MST"), s.Bot.uptimeString(s.Bot.Uptime),
-		s.YouTube.ChannelID, s.YouTube.ChannelID, s.YouTube.CycleDurationMinutes,
+	s.YouTube.PauseMutex.Lock()
+	pause := false
+	if s.YouTube.Pause > 0 {
+		pause = true
+	}
+	s.YouTube.PauseMutex.Unlock()
+
+	text := fmt.Sprintf(""+
+		"Launch time: %s"+
+		"\nUptime: %s"+
+		"\nPause: %v"+
+		"\n"+
+		"\nChannel ID: <a href=\"youtube.com/channel/%s\">%s</a>"+
+		"\nCycle duration: %vmin"+
+		"\nN iterations: %v"+
+		"\nLast check: %s",
+
+		s.Bot.Uptime.In(s.Loc).Format("2006.01.02 15:04:05 MST"), s.Bot.uptimeString(s.Bot.Uptime), pause,
+		s.YouTube.ChannelID, s.YouTube.ChannelID, s.YouTube.CycleDurationMinutes, s.YouTube.NumberIterations,
+		s.YouTube.LastTime.In(s.Loc).Format("2006.01.02 15:04:05 MST"),
 	)
 
 	rm := s.Bot.Markup(x, "status")

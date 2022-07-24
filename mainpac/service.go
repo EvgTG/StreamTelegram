@@ -72,6 +72,7 @@ func (s Service) Start() {
 	log.Info("tgbot launch...")
 	fmt.Println("tgbot @" + s.Bot.Me.Username)
 	go s.GoCheckErrs()
+	go s.GoYouTube()
 	s.Bot.Start()
 }
 
