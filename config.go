@@ -17,9 +17,6 @@ type InitConfig struct {
 	ErrorList    []int64        `env:"ERRORLIST"`
 	TimeLocation MyTimeLocation `env:"LOC" env-default:"UTC"`
 
-	NameDB   string `env:"NAMEDB" env-default:"streamtg"`
-	MongoUrl string `env:"MONGOURL" env-default:"mongodb://127.0.0.1:27017"`
-
 	PingPort string `env:"PINGPORT" env-default:"6975"`
 	PingOn   bool   `env:"PINGON" env-default:"false"`
 }
