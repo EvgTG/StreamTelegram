@@ -73,16 +73,17 @@ func (s Service) Start() {
 }
 
 func (s Service) GoCheckErrs() {
-	time.Sleep(time.Second * 30)
-	nErr := log.GetErrN()
-	if nErr > 0 {
-		s.Bot.sendToSlice(s.Bot.ErrorList, fmt.Sprintf("Новых ошибок: %v.\nЗагляните в логи.", nErr))
+	checkErrs := func() {
+		nErr := log.GetErrN()
+		if nErr > 0 {
+			s.Bot.sendToSlice(s.Bot.ErrorList, fmt.Sprintf("Новых ошибок: %v.\nЗагляните в логи - /logs.", nErr))
+		}
 	}
 
+	time.Sleep(time.Second * 30)
+	checkErrs()
+
 	for range time.Tick(time.Minute * 5) {
-		nErr = log.GetErrN()
-		if nErr > 0 {
-			s.Bot.sendToSlice(s.Bot.ErrorList, fmt.Sprintf("Новых ошибок: %v.\nЗагляните в логи.", nErr))
-		}
+		checkErrs()
 	}
 }
