@@ -16,6 +16,7 @@ const (
 	Live     = "live"
 	LiveGo   = "live_go"
 	End      = "end"
+	End404   = "end404"
 )
 
 // 404 video upcoming live end
@@ -68,7 +69,7 @@ func TypeVideo(url string) (string, *time.Time, error) {
 }
 
 func GetChannelIDByUrl(url string) (string, error) {
-	ok, err := regexp.MatchString("^https://www.youtube.com/(channel|c|user)/", url)
+	ok, err := regexp.MatchString("^https://www.youtube.com/(channel/|c/|user/|)", url)
 	if err != nil {
 		return "", eris.Wrap(err, "regexp.MatchString()")
 	}

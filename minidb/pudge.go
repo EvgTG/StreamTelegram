@@ -21,9 +21,9 @@ func NewDB() (*Pudge, error) {
 		db: minidb,
 	}
 
-	err = p.SetVideoIDs()
+	err = p.GetVideoIDs()
 	if err != nil {
-		return nil, eris.Wrap(err, "p.SetVideoIDs()")
+		return nil, eris.Wrap(err, "p.GetVideoIDs()")
 	}
 
 	return &p, nil

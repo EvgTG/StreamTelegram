@@ -96,6 +96,8 @@ func (s *Service) YouTubeCheck() {
 			s.SendNotify(content)
 			go s.GoStartWait(content)
 		}
+
+		time.Sleep(time.Second * 10)
 	}
 
 }
@@ -153,6 +155,12 @@ func (s *Service) GoEndWait(content *NotifyContent) {
 			break
 		}
 
+		if typeVideo == util.Err404 {
+			content.Type = util.End404
+			s.SendNotify(content)
+			break
+		}
+
 		if typeVideo != util.Live {
 			break
 		}
@@ -172,7 +180,10 @@ func (s *Service) SendNotify(content *NotifyContent) {
 	for _, channel := range s.Bot.NotifyList {
 		switch content.Type {
 		case util.Live:
-			s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "live", content))
+			_, err := s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "live", content))
+			if err != nil {
+				log.Error(eris.Wrap(err, "SendNotify Live"))
+			}
 		case util.Upcoming:
 			if len(s.YouTube.Locs) > 1 {
 				content.Time += ":\n"
@@ -199,11 +210,25 @@ func (s *Service) SendNotify(content *NotifyContent) {
 				}
 			}
 
-			s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "upcoming", content))
+			_, err := s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "upcoming", content))
+			if err != nil {
+				log.Error(eris.Wrap(err, "SendNotify Upcoming"))
+			}
 		case util.LiveGo:
-			s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "live_go", content))
+			_, err := s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "live_go", content))
+			if err != nil {
+				log.Error(eris.Wrap(err, "SendNotify LiveGo"))
+			}
 		case util.End:
-			s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "end", content))
+			_, err := s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "end", content))
+			if err != nil {
+				log.Error(eris.Wrap(err, "SendNotify End"))
+			}
+		case util.End404:
+			_, err := s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "end404", content))
+			if err != nil {
+				log.Error(eris.Wrap(err, "SendNotify End404"))
+			}
 		}
 	}
 }
