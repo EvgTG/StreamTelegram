@@ -57,7 +57,8 @@ func (s *Service) TgAdm(x tb.Context) (errReturn error) {
 		"\n/get_channel - получить id канала" +
 		"\n/set_dur - время обновления информации" +
 		"\n/notify - каналы для вывода уведомлений" +
-		"\n/locs - настройка часовых поясов в уведомлениях",
+		"\n/locs - настройка часовых поясов в уведомлениях" +
+		"\n/last_rss - последние видео",
 	)
 
 	x.Send(text)

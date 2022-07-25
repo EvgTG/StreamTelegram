@@ -20,6 +20,7 @@ func (s *Service) InitBot() {
 	s.Bot.Handle("/notify", s.TgNotify)
 	s.Bot.Handle("/notify_add", s.TgNotifyAdd)
 	s.Bot.Handle("/notify_del", s.TgNotifyDel)
+	s.Bot.Handle("/last_rss", s.TgLastRSS)
 	s.Bot.Handle(tb.OnText, s.TgCallbackQuery)
 
 	// Кнопки

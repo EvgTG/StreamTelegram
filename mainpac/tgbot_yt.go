@@ -315,3 +315,15 @@ func (s *Service) TgNotifyDel(x tb.Context) (errReturn error) {
 	x.Send(s.Bot.Text(x, "done"))
 	return
 }
+
+func (s *Service) TgLastRSS(x tb.Context) (errReturn error) {
+	feed := s.YouTube.LastRSS
+
+	str := fmt.Sprintf("[%v](%v)\n", feed.Title, feed.Link)
+	for n, item := range feed.Items {
+		str += fmt.Sprintf("%v. [%v](%v)\n%v\n", n+1, item.Title, item.Link, item.UpdatedParsed.In(s.Loc).Format("2006 01.02 15*:*04"))
+	}
+
+	x.Send(str, &tb.SendOptions{ParseMode: tb.ModeMarkdown})
+	return
+}
