@@ -24,6 +24,7 @@ type Service struct {
 type YouTube struct {
 	Parser *gofeed.Parser
 
+	LastRSS          gofeed.Feed
 	LastTime         time.Time
 	NumberIterations int
 
@@ -34,7 +35,6 @@ type YouTube struct {
 	ChannelID            string
 	CycleDurationMinutes int // minutes
 
-	Text       Text
 	Locs       []string
 	TimeFormat string
 	TimeCity   bool
@@ -45,10 +45,6 @@ func TimeFormatCity(withCity bool) string {
 		return "2 Jan 15:04 MST"
 	}
 	return "2 Jan 15:04"
-}
-
-type Text struct {
-	Live, Upcoming, Start, End string
 }
 
 type Bot struct {

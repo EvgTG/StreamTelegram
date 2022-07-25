@@ -97,8 +97,8 @@ func (s *Service) TgStatusUpdate(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
-	s.YouTube.PauseMutex.Lock()
 	pause := false
+	s.YouTube.PauseMutex.Lock()
 	if s.YouTube.Pause > 0 {
 		pause = true
 	}

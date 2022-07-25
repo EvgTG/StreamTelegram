@@ -111,15 +111,9 @@ func NewService(db *minidb.Pudge) *mainpac.Service {
 			PauseWaitChannel:     make(chan struct{}),
 			ChannelID:            channelID,
 			CycleDurationMinutes: cycleDuration,
-			Text: mainpac.Text{
-				Live:     lt.TextLocale("ru", "live"),
-				Upcoming: lt.TextLocale("ru", "upcoming"),
-				Start:    lt.TextLocale("ru", "live_go"),
-				End:      lt.TextLocale("ru", "end"),
-			},
-			Locs:       locs,
-			TimeFormat: mainpac.TimeFormatCity(timeWithCity),
-			TimeCity:   timeWithCity,
+			Locs:                 locs,
+			TimeFormat:           mainpac.TimeFormatCity(timeWithCity),
+			TimeCity:             timeWithCity,
 		},
 	}
 

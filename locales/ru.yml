@@ -10,8 +10,7 @@ notify_del: "Чтобы удалить канал уведомлений вве�
 notify_del_nil: "Не найдено."
 done: "Сделано."
 
-live: "{{.Title}}\n\nyoutube.com/watch?v={{.GUID}}"
-upcoming: "{{.Title}}\n\nЗапланировано на{{.Content}}\nyoutube.com/watch?v={{.GUID}}"
+live: "{{.Title}}\n\nyoutube.com/watch?v={{.VideoID}}"
+upcoming: "{{.Title}}\n\nЗапланировано на{{.Time}}\nyoutube.com/watch?v={{.VideoID}}"
 live_go: "Стрим начался!"
 end: "Стрим окончен."
-
