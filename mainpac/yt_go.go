@@ -30,6 +30,10 @@ func (s *Service) GoYouTube() {
 }
 
 func (s *Service) YouTubeCheck() {
+	if s.YouTube.ChannelID == "" {
+		return
+	}
+
 	// получение rss
 	feed, err := s.YouTube.Parser.ParseURL("https://www.youtube.com/feeds/videos.xml?channel_id=" + s.YouTube.ChannelID)
 	if err != nil {

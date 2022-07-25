@@ -76,13 +76,13 @@ func (s Service) GoCheckErrs() {
 	time.Sleep(time.Second * 30)
 	nErr := log.GetErrN()
 	if nErr > 0 {
-		s.Bot.sendToSlice(s.Bot.ErrorList, fmt.Sprintf("Новых ошибок: %v.\n Заляните в логи.", nErr))
+		s.Bot.sendToSlice(s.Bot.ErrorList, fmt.Sprintf("Новых ошибок: %v.\nЗагляните в логи.", nErr))
 	}
 
 	for range time.Tick(time.Minute * 5) {
 		nErr = log.GetErrN()
 		if nErr > 0 {
-			s.Bot.sendToSlice(s.Bot.ErrorList, fmt.Sprintf("Новых ошибок: %v.\n Заляните в логи.", nErr))
+			s.Bot.sendToSlice(s.Bot.ErrorList, fmt.Sprintf("Новых ошибок: %v.\nЗагляните в логи.", nErr))
 		}
 	}
 }
