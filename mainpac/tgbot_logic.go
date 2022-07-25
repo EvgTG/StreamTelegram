@@ -164,6 +164,10 @@ func (s *Service) TgCallbackQuery(x tb.Context) (errReturn error) {
 		return
 	}
 
+	if x.Message().IsForwarded() {
+		x.Send(fmt.Sprintf("id <code>%v</code>", x.Message().OriginalChat.ID))
+	}
+
 	switch s.Bot.CallbackQuery[x.Chat().ID] {
 	case "": //Нет в CallbackQuery - игнор
 	case "test":
