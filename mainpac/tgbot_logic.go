@@ -52,7 +52,7 @@ func (s *Service) TgAdm(x tb.Context) (errReturn error) {
 		"\n/start - приветствие" +
 		"\n/status - статус работы" +
 		"\n/logs - действия над логами" +
-		"\n/testNotify - проверка уведомлений" +
+		"\n/test_notify - проверка уведомлений" +
 		"\n/set_commands - установить меню бота" +
 		"\n\n/set_channel - установить канал" +
 		"\n/get_channel - получить id канала" +

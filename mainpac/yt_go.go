@@ -196,7 +196,7 @@ func (s *Service) SendNotify(content *NotifyContent) {
 				}
 
 				tmFormat := s.YouTube.TimeFormat
-				if content.TimePub.YearDay() == now.In(loc).YearDay() && content.TimePub.Year() == now.In(loc).Year() {
+				if content.TimePub.In(loc).YearDay() == now.In(loc).YearDay() && content.TimePub.In(loc).Year() == now.In(loc).Year() {
 					tmFormat = strings.Replace(tmFormat, "2 Jan ", "", 1)
 				}
 				tm := content.TimePub.In(loc).Format(tmFormat)
