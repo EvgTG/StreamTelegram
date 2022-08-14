@@ -349,7 +349,7 @@ func (s *Service) TgTestNotify(x tb.Context) (errReturn error) {
 	time.Sleep(time.Millisecond * 500)
 
 	content.Type = util.Upcoming
-	tm = time.Now().Add(time.Hour * 24).Add(time.Minute * 5)
+	tm = time.Now().Add(time.Hour * 24).Add(time.Hour).Add(time.Minute * 5)
 	content.TimePub = &tm
 	s.SendNotify(content)
 	content.Time = ""
