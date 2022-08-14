@@ -70,7 +70,7 @@ func TextCut(s, addStr string, n int) string {
 	return s
 }
 
-var shortMonthNamesReplace = []string{
+var MonthReplacer = strings.NewReplacer([]string{
 	"Jan", "Января",
 	"Feb", "Февраля",
 	"Mar", "Марта",
@@ -83,6 +83,9 @@ var shortMonthNamesReplace = []string{
 	"Oct", "Октября",
 	"Nov", "Ноября",
 	"Dec", "Декабря",
-}
+}...)
 
-var MonthReplacer = strings.NewReplacer(shortMonthNamesReplace...)
+var CityReplacer = strings.NewReplacer([]string{
+	"MSK", "Москва",
+	"EEST", "Киев",
+}...)

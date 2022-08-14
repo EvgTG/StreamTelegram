@@ -185,9 +185,7 @@ func (s *Service) SendNotify(content *NotifyContent) {
 				log.Error(eris.Wrap(err, "SendNotify Live"))
 			}
 		case util.Upcoming:
-			if len(s.YouTube.Locs) > 1 {
-				content.Time += ":\n"
-			}
+			now := time.Now()
 
 			bl := false
 			for _, locStr := range s.YouTube.Locs {
@@ -197,18 +195,23 @@ func (s *Service) SendNotify(content *NotifyContent) {
 					continue
 				}
 
-				tm := content.TimePub.In(loc).Format(s.YouTube.TimeFormat)
-				if locStr == "Europe/Moscow" {
-					tm = util.MonthReplacer.Replace(tm)
+				tmFormat := s.YouTube.TimeFormat
+				if content.TimePub.YearDay() == now.In(loc).YearDay() && content.TimePub.Year() == now.In(loc).Year() {
+					tmFormat = strings.Replace(tmFormat, "2 Jan ", "", 1)
 				}
+				tm := content.TimePub.In(loc).Format(tmFormat)
+				tm = util.MonthReplacer.Replace(tm)
+				tm = util.CityReplacer.Replace(tm)
 
 				if bl {
 					content.Time += "\n" + tm
-					bl = true
 				} else {
 					content.Time += tm
+					bl = true
 				}
 			}
+
+			content.Time += "\nЧерез " + timeToStream((time.Second * time.Duration(content.TimePub.Unix()-time.Now().Unix())))
 
 			_, err := s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "upcoming", content))
 			if err != nil {

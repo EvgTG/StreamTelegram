@@ -42,9 +42,9 @@ type YouTube struct {
 
 func TimeFormatCity(withCity bool) string {
 	if withCity {
-		return "2 Jan 15:04 MST"
+		return "🕒 2 Jan 15:04 MST"
 	}
-	return "2 Jan 15:04"
+	return "🕒 2 Jan 15:04"
 }
 
 type Bot struct {

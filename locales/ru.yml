@@ -11,7 +11,7 @@ notify_del_nil: "Не найдено."
 done: "Сделано."
 
 live: "{{.Title}}\n\nyoutube.com/watch?v={{.VideoID}}"
-upcoming: "{{.Title}}\n\nЗапланировано на{{.Time}}\nyoutube.com/watch?v={{.VideoID}}"
+upcoming: "{{.Title}}\n\n{{.Time}}\n\nyoutube.com/watch?v={{.VideoID}}"
 live_go: "Стрим начался!"
 end: "Стрим окончен."
 end404: "Стрим !возможно! окончен."

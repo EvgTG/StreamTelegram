@@ -4,6 +4,7 @@ import (
 	"fmt"
 	tb "gopkg.in/tucnak/telebot.v3"
 	"streamtg/util"
+	"strings"
 	"time"
 )
 
@@ -32,4 +33,21 @@ func (bot *Bot) uptimeString(timestamp time.Time) string {
 		hoursStr = fmt.Sprintf("%vd", hours)
 	}
 	return hoursStr + uptime.String()
+}
+
+var durReplacer = strings.NewReplacer("d", "д ", "h", "ч ", "m", "м", "0s", "")
+
+func timeToStream(tm time.Duration) (str string) {
+	tm = tm.Round(time.Minute)
+
+	hours, hoursStr := 0, ""
+	for tm.Hours() >= 24 {
+		tm -= time.Hour * 24
+		hours++
+	}
+	if hours > 0 {
+		hoursStr = fmt.Sprintf("%vd", hours)
+	}
+
+	return durReplacer.Replace(hoursStr + tm.String())
 }

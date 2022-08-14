@@ -8,6 +8,7 @@ func (s *Service) InitBot() {
 	s.Bot.Handle("/start", s.TgStart)
 	s.Bot.Handle("/help", s.TgStart)
 	s.Bot.Handle("/test", s.TgTest)
+	s.Bot.Handle("/testNotify", s.TgTestNotify)
 	s.Bot.Handle("/adm", s.TgAdm)
 	s.Bot.Handle("/status", s.TgStatus)
 	s.Bot.Handle("/logs", s.TgLogs)

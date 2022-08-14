@@ -327,3 +327,45 @@ func (s *Service) TgLastRSS(x tb.Context) (errReturn error) {
 	x.Send(str, &tb.SendOptions{ParseMode: tb.ModeMarkdown})
 	return
 }
+
+func (s *Service) TgTestNotify(x tb.Context) (errReturn error) {
+	content := &NotifyContent{
+		Type:    "",
+		Title:   "Название стрима",
+		VideoID: "dQw4w9WgXcQ",
+		Time:    "",
+		TimePub: nil,
+	}
+
+	content.Type = util.Live
+	s.SendNotify(content)
+	time.Sleep(time.Millisecond * 500)
+
+	content.Type = util.Upcoming
+	tm := time.Now().Add(time.Minute * 5)
+	content.TimePub = &tm
+	s.SendNotify(content)
+	content.Time = ""
+	time.Sleep(time.Millisecond * 500)
+
+	content.Type = util.Upcoming
+	tm = time.Now().Add(time.Hour * 24).Add(time.Minute * 5)
+	content.TimePub = &tm
+	s.SendNotify(content)
+	content.Time = ""
+	time.Sleep(time.Millisecond * 500)
+
+	content.Type = util.LiveGo
+	s.SendNotify(content)
+	time.Sleep(time.Millisecond * 500)
+
+	content.Type = util.End
+	s.SendNotify(content)
+	time.Sleep(time.Millisecond * 500)
+
+	content.Type = util.End404
+	s.SendNotify(content)
+
+	x.Send("Готово.")
+	return
+}
