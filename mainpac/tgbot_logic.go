@@ -126,6 +126,17 @@ func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
 	return text, rm
 }
 
+func (s *Service) TgPause(x tb.Context) (errReturn error) {
+	if s.Bot.isNotAdmin(x) {
+		return
+	}
+
+	s.YouTube.SetPause()
+	x.Respond()
+	s.TgStatusUpdate(x)
+	return
+}
+
 func (s *Service) TgLogs(x tb.Context) (errReturn error) {
 	if s.Bot.isNotAdmin(x) {
 		return

@@ -236,17 +236,17 @@ func (s *Service) SendNotify(content *NotifyContent) {
 	}
 }
 
-func (s *Service) YouTubePause() {
-	s.YouTube.PauseMutex.Lock()
-	defer s.YouTube.PauseMutex.Unlock()
+func (y *YouTube) SetPause() {
+	y.PauseMutex.Lock()
+	defer y.PauseMutex.Unlock()
 
-	switch s.YouTube.Pause {
+	switch y.Pause {
 	case 0:
-		s.YouTube.Pause = 1
+		y.Pause = 1
 	case 1:
-		s.YouTube.Pause = 0
+		y.Pause = 0
 	case 2:
-		s.YouTube.Pause = 0
-		s.YouTube.PauseWaitChannel <- struct{}{}
+		y.Pause = 0
+		y.PauseWaitChannel <- struct{}{}
 	}
 }

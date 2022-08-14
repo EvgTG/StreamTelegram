@@ -19,6 +19,9 @@ buttons:
   status_update:
     unique: status_update
     text: 🔄Обновить
+  pause:
+    unique: pause
+    text: ⏯Пауза
   get_logs:
     unique: get_logs
     text: 1
@@ -54,7 +57,7 @@ markups:
   logs:
     - [ get_logs, clear_logs ]
   status:
-    - [ status_update ]
+    - [ status_update, pause ]
   locs:
     - [ set_loc ]
     - [ locs_update, locs_clear ]

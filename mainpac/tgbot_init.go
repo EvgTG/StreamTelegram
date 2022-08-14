@@ -30,6 +30,7 @@ func (s *Service) InitBot() {
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "delete"), s.TgDeleteBtn)
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "cancel"), s.TgCancelReplyMarkup)
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "status_update"), s.TgStatusUpdate)
+	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "pause"), s.TgPause)
 
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "get_logs"), s.TgGetLogsBtn)
 	s.Bot.Handle(s.Bot.Layout.ButtonLocale("", "clear_logs"), s.TgClearLogsBtn)
