@@ -186,6 +186,7 @@ func (s *Service) SendNotify(content *NotifyContent) {
 			}
 		case util.Upcoming:
 			now := time.Now()
+			content.Time = ""
 
 			bl := false
 			for _, locStr := range s.YouTube.Locs {
