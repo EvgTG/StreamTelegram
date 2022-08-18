@@ -20,6 +20,7 @@ const (
 )
 
 // 404 video upcoming live end
+//TODO добавить wait статус (время стрима пришло, но не началось)
 func TypeVideo(url string) (string, *time.Time, error) {
 	resp, err := http.Get(url)
 	if err != nil {

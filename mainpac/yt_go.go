@@ -106,6 +106,10 @@ func (s *Service) GoStartWait(content *NotifyContent) {
 	time.Sleep(time.Second*time.Duration(content.TimePub.Unix()-time.Now().Unix()) + 15)
 	for i := 0; i < 30; i++ {
 		typeVideo, _, err := util.TypeVideo("https://www.youtube.com/watch?v=" + content.VideoID)
+		if err != nil && strings.Contains(err.Error(), "startDate 404") {
+			time.Sleep(time.Minute * 3)
+			continue
+		}
 		if err != nil {
 			log.Error(eris.Wrap(err, "GoStartWait util.TypeVideo()"))
 			break
