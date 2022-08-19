@@ -75,6 +75,7 @@ func (s *Service) YouTubeCheck() {
 		typeVideo, timePub, err := util.TypeVideo("https://www.youtube.com/watch?v=" + itm.id)
 		if err != nil {
 			log.Error(eris.Wrap(err, "YouTubeCheck util.TypeVideo()"))
+			time.Sleep(time.Second * 10)
 			continue
 		}
 
@@ -87,8 +88,6 @@ func (s *Service) YouTubeCheck() {
 		}
 
 		switch typeVideo {
-		case util.Err404:
-			log.Error(eris.New("YouTubeCheck util.Err404 util.TypeVideo()"))
 		case util.Live:
 			s.SendNotify(content)
 			go s.GoEndWait(content)
@@ -108,7 +107,8 @@ func (s *Service) GoStartWait(content *NotifyContent) {
 		typeVideo, _, err := util.TypeVideo("https://www.youtube.com/watch?v=" + content.VideoID)
 		if err != nil {
 			log.Error(eris.Wrap(err, "GoStartWait util.TypeVideo()"))
-			break
+			time.Sleep(time.Minute * 2)
+			continue
 		}
 
 		if typeVideo == util.Live {
@@ -146,7 +146,7 @@ func (s *Service) GoEndWait(content *NotifyContent) {
 		typeVideo, _, err := util.TypeVideo("https://www.youtube.com/watch?v=" + content.VideoID)
 		if err != nil {
 			log.Error(eris.Wrap(err, "GoEndWait util.TypeVideo()"))
-			break
+			continue
 		}
 
 		if typeVideo == util.End {
