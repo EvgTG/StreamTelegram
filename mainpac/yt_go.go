@@ -103,7 +103,7 @@ func (s *Service) YouTubeCheck() {
 }
 
 func (s *Service) GoStartWait(content *NotifyContent) {
-	time.Sleep(time.Second*time.Duration(content.TimePub.Unix()-time.Now().Unix()) + 15)
+	time.Sleep(time.Second*time.Duration(content.TimePub.Unix()-time.Now().Unix()) + 35)
 	for i := 0; i < 30; i++ {
 		typeVideo, _, err := util.TypeVideo("https://www.youtube.com/watch?v=" + content.VideoID)
 		if err != nil {
