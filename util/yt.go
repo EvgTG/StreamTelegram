@@ -13,14 +13,14 @@ const (
 	Err404   = "404"
 	Video    = "video"
 	Upcoming = "upcoming"
+	Wait     = "wait"
 	Live     = "live"
 	LiveGo   = "live_go"
 	End      = "end"
 	End404   = "end404"
 )
 
-// 404 video upcoming live end
-//TODO добавить wait статус (время стрима пришло, но не началось)
+// 404 video upcoming wait live end
 func TypeVideo(url string) (string, *time.Time, error) {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -36,37 +36,45 @@ func TypeVideo(url string) (string, *time.Time, error) {
 	page := string(bs)
 
 	if strings.Contains(page, `{"iconType":"ERROR_OUTLINE"}`) {
-		return "404", nil, nil
+		return Err404, nil, nil
 	}
 	if !strings.Contains(page, `<span itemprop="publication" itemscope itemtype="http://schema.org/BroadcastEvent">`) {
-		return "video", nil, nil
+		return Video, nil, nil
 	}
 
-	tmStrings := []string{`<meta itemprop="startDate" content="`, `">`}
-	iTime1 := strings.Index(page, tmStrings[0])
-	if iTime1 < 0 {
-		return "", nil, eris.New("startDate 404")
-	}
-	iTime1 += len(tmStrings[0])
-	iTime2 := strings.Index(page[iTime1:], tmStrings[1])
-	if iTime2 < 0 {
-		return "", nil, eris.New("startDate 404")
-	}
-	iTime2 += iTime1
+	getTime := func() (time.Time, error) {
+		tmStrings := []string{`<meta itemprop="startDate" content="`, `">`}
+		iTime1 := strings.Index(page, tmStrings[0])
+		if iTime1 < 0 {
+			return time.Unix(322, 0), nil
+		}
+		iTime1 += len(tmStrings[0])
+		iTime2 := strings.Index(page[iTime1:], tmStrings[1])
+		if iTime2 < 0 {
+			return time.Unix(322, 0), nil
+		}
+		iTime2 += iTime1
 
-	tm, err := time.Parse(time.RFC3339, page[iTime1:iTime2])
-	if err != nil {
+		return time.Parse(time.RFC3339, page[iTime1:iTime2])
+	}
+
+	tm, err := getTime()
+	if err != nil && tm.Unix() != 322 {
 		return "", nil, eris.New("startDate time.Parse()")
 	}
 
 	if strings.Contains(page, `"isUpcoming":true,`) {
-		return "upcoming", &tm, nil
+		if tm.Unix() == 322 {
+			tm = time.Now().In(time.UTC)
+			return Wait, &tm, nil
+		}
+		return Upcoming, &tm, nil
 	}
 	if strings.Contains(page, `"isLive":true,`) {
-		return "live", &tm, nil
+		return Live, &tm, nil
 	}
 
-	return "end", &tm, nil
+	return End, &tm, nil
 }
 
 func GetChannelIDByUrl(url string) (string, error) {
