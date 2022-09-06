@@ -224,6 +224,10 @@ func (s *Service) SendNotify(content *NotifyContent) {
 				log.Error(eris.Wrap(err, "SendNotify LiveGo"))
 			}
 		case util.End:
+			if !channel.EndOfStream {
+				continue
+			}
+
 			_, err := s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "end", content))
 			if err != nil {
 				log.Error(eris.Wrap(err, "SendNotify End"))
