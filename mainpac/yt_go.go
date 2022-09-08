@@ -233,6 +233,10 @@ func (s *Service) SendNotify(content *NotifyContent) {
 				log.Error(eris.Wrap(err, "SendNotify End"))
 			}
 		case util.End404:
+			if !channel.EndOfStream {
+				continue
+			}
+
 			_, err := s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "end404", content))
 			if err != nil {
 				log.Error(eris.Wrap(err, "SendNotify End404"))
