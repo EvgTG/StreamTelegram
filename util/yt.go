@@ -2,9 +2,11 @@ package util
 
 import (
 	"github.com/rotisserie/eris"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"regexp"
+	"streamtg/go-log"
 	"strings"
 	"time"
 )
@@ -21,18 +23,21 @@ const (
 )
 
 // 404 video upcoming wait live end
-func TypeVideo(url string) (string, *time.Time, error) {
-	resp, err := http.Get(url)
+func TypeVideo(videoID string, debugSave bool) (string, *time.Time, error) {
+	resp, err := http.Get("https://www.youtube.com/watch?v=" + videoID)
 	if err != nil {
 		return "", nil, eris.Wrap(err, "http.Get(url)")
 	}
 	defer resp.Body.Close()
 
-	bs, err := ioutil.ReadAll(resp.Body)
+	bs, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", nil, eris.Wrap(err, "ioutil.ReadAll()")
+		return "", nil, eris.Wrap(err, "io.ReadAll()")
 	}
-
+	err = os.WriteFile("files/"+time.Now().Format(time.RFC3339)+".txt", bs, os.ModePerm)
+	if err != nil {
+		log.Error(eris.Wrap(err, "os.WriteFile"))
+	}
 	page := string(bs)
 
 	if strings.Contains(page, `{"iconType":"ERROR_OUTLINE"}`) {
@@ -92,9 +97,9 @@ func GetChannelIDByUrl(url string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	bytes, err := ioutil.ReadAll(resp.Body)
+	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", eris.Wrap(err, "ioutil.ReadAll()")
+		return "", eris.Wrap(err, "io.ReadAll()")
 	}
 
 	page := string(bytes)

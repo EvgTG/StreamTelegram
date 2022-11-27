@@ -104,6 +104,7 @@ func NewService(db *minidb.Pudge) *mainpac.Service {
 
 		YouTube: &mainpac.YouTube{
 			Parser:               gofeed.NewParser(),
+			LogLevel:             CFG.LogLevel,
 			LastTime:             time.Unix(0, 0),
 			NumberIterations:     0,
 			PauseMutex:           sync.Mutex{},

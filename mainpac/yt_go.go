@@ -47,7 +47,7 @@ func (s *Service) YouTubeCheck() {
 	}
 
 	// проверка на новые видео
-	items := []item{}
+	items := make([]item, 0, 1)
 	for _, value := range feed.Items {
 		if !strings.Contains(value.GUID, "yt:video:") {
 			continue
@@ -72,12 +72,15 @@ func (s *Service) YouTubeCheck() {
 
 	// обработка новых видео
 	for _, itm := range items {
-		typeVideo, timePub, err := util.TypeVideo("https://www.youtube.com/watch?v=" + itm.id)
+		log.Debug("YouTubeCheck new item", itm.id, itm.title)
+
+		typeVideo, timePub, err := util.TypeVideo(itm.id, s.YouTube.DebugLevel())
 		if err != nil {
 			log.Error(eris.Wrap(err, "YouTubeCheck util.TypeVideo()"))
 			time.Sleep(time.Second * 10)
 			continue
 		}
+		log.Debug("YouTubeCheck", itm.id, typeVideo)
 
 		content := &NotifyContent{
 			Type:    typeVideo,
@@ -102,9 +105,12 @@ func (s *Service) YouTubeCheck() {
 }
 
 func (s *Service) GoStartWait(content *NotifyContent) {
+	log.Debug("GoStartWait", content.VideoID)
+
 	time.Sleep(time.Second*time.Duration(content.TimePub.Unix()-time.Now().Unix()) + 35)
 	for i := 0; i < 30; i++ {
-		typeVideo, _, err := util.TypeVideo("https://www.youtube.com/watch?v=" + content.VideoID)
+		typeVideo, _, err := util.TypeVideo(content.VideoID, s.YouTube.DebugLevel())
+		log.Debug("GoStartWait for", content.VideoID, typeVideo)
 		if err != nil {
 			log.Error(eris.Wrap(err, "GoStartWait util.TypeVideo()"))
 			time.Sleep(time.Minute * 2)
@@ -127,6 +133,8 @@ func (s *Service) GoStartWait(content *NotifyContent) {
 }
 
 func (s *Service) GoEndWait(content *NotifyContent) {
+	log.Debug("GoEndWait", content.VideoID)
+
 	{
 		ok := false
 		for _, channel := range s.Bot.NotifyList {
@@ -143,7 +151,7 @@ func (s *Service) GoEndWait(content *NotifyContent) {
 	for {
 		time.Sleep(time.Minute * 7)
 
-		typeVideo, _, err := util.TypeVideo("https://www.youtube.com/watch?v=" + content.VideoID)
+		typeVideo, _, err := util.TypeVideo(content.VideoID, s.YouTube.DebugLevel())
 		if err != nil {
 			log.Error(eris.Wrap(err, "GoEndWait util.TypeVideo()"))
 			continue
@@ -177,6 +185,8 @@ type NotifyContent struct {
 }
 
 func (s *Service) SendNotify(content *NotifyContent) {
+	log.Debug("SendNotify", content.VideoID, content.Type)
+
 	for _, channel := range s.Bot.NotifyList {
 		switch content.Type {
 		case util.Live:
@@ -258,4 +268,8 @@ func (y *YouTube) SetPause() {
 		y.Pause = 0
 		y.PauseWaitChannel <- struct{}{}
 	}
+}
+
+func (y *YouTube) DebugLevel() bool {
+	return strings.ToLower(y.LogLevel) == "debug"
 }

@@ -114,11 +114,13 @@ func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
 		"\nChannel ID: <a href=\"youtube.com/channel/%s\">%s</a>"+
 		"\nCycle duration: %vmin"+
 		"\nN iterations: %v"+
-		"\nLast check: %s",
+		"\nLast check: %s"+
+		"\n<a href=\"%s\">RSS url</a>",
 
 		s.Bot.Uptime.In(s.Loc).Format("2006.01.02 15:04:05 MST"), s.Bot.uptimeString(s.Bot.Uptime), pause,
 		s.YouTube.ChannelID, s.YouTube.ChannelID, s.YouTube.CycleDurationMinutes, s.YouTube.NumberIterations,
 		s.YouTube.LastTime.In(s.Loc).Format("2006.01.02 15:04:05 MST"),
+		"https://www.youtube.com/feeds/videos.xml?channel_id="+s.YouTube.ChannelID,
 	)
 
 	rm := s.Bot.Markup(x, "status")

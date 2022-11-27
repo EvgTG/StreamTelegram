@@ -22,7 +22,8 @@ type Service struct {
 }
 
 type YouTube struct {
-	Parser *gofeed.Parser
+	Parser   *gofeed.Parser
+	LogLevel string
 
 	LastRSS          gofeed.Feed
 	LastTime         time.Time
