@@ -87,5 +87,5 @@ var MonthReplacer = strings.NewReplacer([]string{
 
 var CityReplacer = strings.NewReplacer([]string{
 	"MSK", "Москва",
-	"EEST", "Киев",
+	"EET", "Киев",
 }...)
