@@ -1,14 +1,15 @@
-FROM golang:1.18.4 as builder
+FROM golang:1.19.3 as builder
 WORKDIR /app
 
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o bot .
+RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o bot .
 
 FROM alpine:latest
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk update --no-cache && apk --no-cache add ca-certificates tzdata
+
 WORKDIR /app
 
 COPY --from=builder /app/bot .
