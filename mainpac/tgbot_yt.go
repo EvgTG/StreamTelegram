@@ -369,3 +369,34 @@ func (s *Service) TgTestNotify(x tb.Context) (errReturn error) {
 	x.Send("Готово.")
 	return
 }
+
+func (s *Service) TgTypeOfVideo(x tb.Context) (errReturn error) {
+	if x.Text() == "/type_of_vid" {
+		x.Send(s.Bot.Text(x, "type_of_vid_empty"))
+		return
+	}
+
+	url := strings.Replace(x.Text(), "/type_of_vid ", "", 1)
+	url = strings.Replace(url, " ", "", -1)
+
+	ok, err := regexp.MatchString(`^https:\/\/www\.youtube\.com\/watch\?v=`, url)
+	if err != nil || !ok {
+		x.Send(s.Bot.Text(x, "type_of_vid_404"))
+		return
+	}
+
+	url = strings.Replace(url, "https://www.youtube.com/watch?v=", "", -1)
+	typeVid, tmStart, err := util.TypeVideo(url, false)
+	if err != nil {
+		x.Send(eris.Wrap(err, "util.TypeVideo()"))
+		return
+	}
+
+	textTime := "nil"
+	if tmStart != nil {
+		textTime = tmStart.In(s.Loc).String()
+	}
+	text := fmt.Sprintf("type: %v\ntime: %v", typeVid, textTime)
+	x.Send(text)
+	return
+}
