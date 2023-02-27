@@ -34,9 +34,11 @@ func TypeVideo(videoID string, debugSave bool) (string, *time.Time, error) {
 	if err != nil {
 		return "", nil, eris.Wrap(err, "io.ReadAll()")
 	}
-	err = os.WriteFile("files/"+time.Now().Format(time.RFC3339)+".txt", bs, os.ModePerm)
-	if err != nil {
-		log.Error(eris.Wrap(err, "os.WriteFile"))
+	if debugSave {
+		err = os.WriteFile("files/"+time.Now().Format(time.RFC3339)+".txt", bs, os.ModePerm)
+		if err != nil {
+			log.Error(eris.Wrap(err, "os.WriteFile"))
+		}
 	}
 	page := string(bs)
 
@@ -83,7 +85,7 @@ func TypeVideo(videoID string, debugSave bool) (string, *time.Time, error) {
 }
 
 func GetChannelIDByUrl(url string) (string, error) {
-	ok, err := regexp.MatchString("^https://www.youtube.com/(channel/|c/|user/|)", url)
+	ok, err := regexp.MatchString(`^https:\/\/www\.youtube\.com\/(channel\/|c\/|user\/|)`, url)
 	if err != nil {
 		return "", eris.Wrap(err, "regexp.MatchString()")
 	}

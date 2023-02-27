@@ -72,7 +72,7 @@ func (s *Service) YouTubeCheck() {
 
 	// обработка новых видео
 	for _, itm := range items {
-		log.Debug("YouTubeCheck new item", itm.id, itm.title)
+		log.Infof("YouTubeCheck new item %v %v", itm.id, itm.title)
 
 		typeVideo, timePub, err := util.TypeVideo(itm.id, s.YouTube.DebugLevel())
 		if err != nil {
@@ -80,7 +80,7 @@ func (s *Service) YouTubeCheck() {
 			time.Sleep(time.Second * 10)
 			continue
 		}
-		log.Debug("YouTubeCheck", itm.id, typeVideo)
+		log.Infof("YouTubeCheck %v %v", itm.id, typeVideo)
 
 		content := &NotifyContent{
 			Type:    typeVideo,
@@ -92,6 +92,8 @@ func (s *Service) YouTubeCheck() {
 
 		switch typeVideo {
 		case util.Live:
+			fallthrough
+		case util.Wait:
 			s.SendNotify(content)
 			go s.GoEndWait(content)
 		case util.Upcoming:

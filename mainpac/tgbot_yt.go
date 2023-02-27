@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/rotisserie/eris"
 	tb "gopkg.in/tucnak/telebot.v3"
+	"regexp"
 	"strconv"
 	"streamtg/minidb"
 	"streamtg/util"
@@ -337,10 +338,12 @@ func (s *Service) TgTestNotify(x tb.Context) (errReturn error) {
 		TimePub: nil,
 	}
 
+	// Live
 	content.Type = util.Live
 	s.SendNotify(content)
 	time.Sleep(time.Millisecond * 500)
 
+	// Upcoming
 	content.Type = util.Upcoming
 	tm := time.Now().Add(time.Minute * 5)
 	content.TimePub = &tm
@@ -348,6 +351,7 @@ func (s *Service) TgTestNotify(x tb.Context) (errReturn error) {
 	content.Time = ""
 	time.Sleep(time.Millisecond * 500)
 
+	// Upcoming 2
 	content.Type = util.Upcoming
 	tm = time.Now().Add(time.Hour * 24).Add(time.Hour).Add(time.Minute * 5)
 	content.TimePub = &tm
@@ -355,14 +359,17 @@ func (s *Service) TgTestNotify(x tb.Context) (errReturn error) {
 	content.Time = ""
 	time.Sleep(time.Millisecond * 500)
 
+	// LiveGo
 	content.Type = util.LiveGo
 	s.SendNotify(content)
 	time.Sleep(time.Millisecond * 500)
 
+	// End
 	content.Type = util.End
 	s.SendNotify(content)
 	time.Sleep(time.Millisecond * 500)
 
+	// End404
 	content.Type = util.End404
 	s.SendNotify(content)
 
