@@ -3,7 +3,7 @@ Notifications about YouTube streams in Telegram.
 Уведомления о YouTube стримах в Телеграм.
 ### Docker
 ```
-docker build -t streamtelegram .  
+docker build --platform linux/amd64 -t streamtelegram:latest -t streamtelegram:1.x.x .
 docker run -d -v /path/files/:/app/files/ --net=host --name stg streamtelegram
 ```
 ### Environment
@@ -30,5 +30,5 @@ PINGON=true
 files/          (папка и рабочее место бота)
     cfg.env     (конфиг)
     logrus.log  (файл логов)
-    minidb/     (маленькая база данных)
+    my.db       (база данных)
 ```

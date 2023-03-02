@@ -1,6 +1,6 @@
 module streamtg
 
-go 1.18
+go 1.19
 
 require (
 	github.com/ilyakaznacheev/cleanenv v1.4.2
