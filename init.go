@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/mmcdole/gofeed"
-	"github.com/recoilme/pudge"
 	"github.com/rotisserie/eris"
 	"go.uber.org/fx"
 	tb "gopkg.in/tucnak/telebot.v3"
@@ -48,13 +47,13 @@ func Logger() {
 	log.Info("Go!")
 }
 
-func NewDB() *minidb.Pudge {
+func NewDB() *minidb.MiniDB {
 	db, err := minidb.NewDB()
 	util.ErrCheckFatal(err, "minidb.NewDB()", "NewDB", "init")
 	return db
 }
 
-func NewService(db *minidb.Pudge) *mainpac.Service {
+func NewService(db *minidb.MiniDB) *mainpac.Service {
 	// Telegram
 	lt, err := layout.New("bot.yml")
 	util.ErrCheckFatal(err, "layout.New()", "NewService", "init")
@@ -71,11 +70,10 @@ func NewService(db *minidb.Pudge) *mainpac.Service {
 	util.ErrCheckFatal(err, "db.GetChannelID()", "NewService", "init")
 
 	cycleDuration, err := db.GetCycleDuration()
-	if err == pudge.ErrKeyNotFound {
-		cycleDuration = 5
-		err = nil
-	}
 	util.ErrCheckFatal(err, "db.GetCycleDuration()", "NewService", "init")
+	if cycleDuration == 0 {
+		cycleDuration = 5
+	}
 
 	locs, err := db.GetLocs()
 	util.ErrCheckFatal(err, "db.GetLocs()", "NewService", "init")

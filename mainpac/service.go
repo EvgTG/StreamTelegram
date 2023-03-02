@@ -14,7 +14,7 @@ import (
 
 type Service struct {
 	Bot    *Bot
-	MiniDB *minidb.Pudge
+	MiniDB *minidb.MiniDB
 	Loc    *time.Location
 	Rand   *rand.Rand
 

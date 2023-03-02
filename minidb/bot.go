@@ -1,57 +1,42 @@
 package minidb
 
-import "github.com/recoilme/pudge"
-
-func (p *Pudge) SetChannelID(id string) error {
-	err := p.db.Set("id", id)
-	return err
+func (mini *MiniDB) SetChannelID(id string) error {
+	return mini.write("id", id)
 }
 
-func (p *Pudge) GetChannelID() (string, error) {
-	id := ""
-	err := p.db.Get("id", &id)
-	if err == pudge.ErrKeyNotFound {
-		return "", nil
-	}
+func (mini *MiniDB) GetChannelID() (string, error) {
+	var id string
+	err := mini.read("id", &id)
 	return id, err
 }
 
-func (p *Pudge) SetCycleDuration(dur int) error {
-	err := p.db.Set("dur", dur)
-	return err
+func (mini *MiniDB) SetCycleDuration(dur int) error {
+	return mini.write("dur", dur)
 }
 
-func (p *Pudge) GetCycleDuration() (int, error) {
-	dur := 0
-	err := p.db.Get("dur", &dur)
+func (mini *MiniDB) GetCycleDuration() (int, error) {
+	var dur int
+	err := mini.read("dur", &dur)
 	return dur, err
 }
 
-func (p *Pudge) SetLocs(locs []string) error {
-	err := p.db.Set("locs", locs)
-	return err
+func (mini *MiniDB) SetLocs(locs []string) error {
+	return mini.write("locs", locs)
 }
 
-func (p *Pudge) GetLocs() ([]string, error) {
-	locs := []string{}
-	err := p.db.Get("locs", &locs)
-	if err == pudge.ErrKeyNotFound {
-		return locs, nil
-	}
+func (mini *MiniDB) GetLocs() ([]string, error) {
+	var locs []string
+	err := mini.read("locs", &locs)
 	return locs, err
 }
 
-func (p *Pudge) SetTimeWithCity(bl bool) error {
-	err := p.db.Set("timecity", bl)
-	return err
+func (mini *MiniDB) SetTimeWithCity(bl bool) error {
+	return mini.write("timecity", bl)
 }
 
-func (p *Pudge) GetTimeWithCity() (bool, error) {
-	bl := true
-	err := p.db.Get("timecity", &bl)
-	if err == pudge.ErrKeyNotFound {
-		return bl, nil
-	}
+func (mini *MiniDB) GetTimeWithCity() (bool, error) {
+	var bl bool
+	err := mini.read("timecity", &bl)
 	return bl, err
 }
 
@@ -60,16 +45,12 @@ type Channel struct {
 	EndOfStream bool
 }
 
-func (p *Pudge) SetNotifyList(list []Channel) error {
-	err := p.db.Set("notifylist", list)
-	return err
+func (mini *MiniDB) SetNotifyList(list []Channel) error {
+	return mini.write("notifylist", list)
 }
 
-func (p *Pudge) GetNotifyList() ([]Channel, error) {
-	list := []Channel{}
-	err := p.db.Get("notifylist", &list)
-	if err == pudge.ErrKeyNotFound {
-		return list, nil
-	}
+func (mini *MiniDB) GetNotifyList() ([]Channel, error) {
+	var list []Channel
+	err := mini.read("notifylist", &list)
 	return list, err
 }
