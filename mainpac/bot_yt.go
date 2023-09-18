@@ -13,10 +13,6 @@ import (
 )
 
 func (s *Service) TgSetChannelID(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	if x.Text() == "/set_channel" {
 		x.Send(s.Bot.Text(x, "set_channel_empty"))
 		return
@@ -43,10 +39,6 @@ func (s *Service) TgSetChannelID(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgGetChannelID(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	if x.Text() == "/get_channel" {
 		x.Send(s.Bot.Text(x, "get_channel_empty"))
 		return
@@ -66,10 +58,6 @@ func (s *Service) TgGetChannelID(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgSetCycleDuration(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	if x.Text() == "/set_dur" {
 		x.Send(s.Bot.Text(x, "set_dur"))
 		return
@@ -109,29 +97,17 @@ func (s *Service) TgLocsFunc(x tb.Context) (string, *tb.ReplyMarkup) {
 }
 
 func (s *Service) TgLocs(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	x.Send(s.TgLocsFunc(x))
 	return
 }
 
 func (s *Service) TgLocsUpdateBtn(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	x.Respond()
 	x.Edit(s.TgLocsFunc(x))
 	return
 }
 
 func (s *Service) TgLocsClearBtn(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	s.YouTube.Locs = []string{}
 	err := s.MiniDB.SetLocs(s.YouTube.Locs)
 	if err != nil {
@@ -146,10 +122,6 @@ func (s *Service) TgLocsClearBtn(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgSetLoc(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	if x.Text() == "/set_loc" || x.Callback() != nil {
 		x.Send(s.Bot.Text(x, "set_loc"), tb.NoPreview)
 		x.Respond()
@@ -177,10 +149,6 @@ func (s *Service) TgSetLoc(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgLocsCity(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	s.YouTube.TimeCity = !s.YouTube.TimeCity
 	s.YouTube.TimeFormat = TimeFormatCity(s.YouTube.TimeCity)
 
@@ -196,19 +164,11 @@ func (s *Service) TgLocsCity(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgNotify(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	x.Send(s.TgNotifyFunc(x))
 	return
 }
 
 func (s *Service) TgNotifyUpdateBtn(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	x.Respond()
 	x.Edit(s.TgNotifyFunc(x))
 	return
@@ -234,10 +194,6 @@ func (s *Service) TgNotifyFunc(x tb.Context) (string, *tb.ReplyMarkup) {
 }
 
 func (s *Service) TgNotifyAdd(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	if x.Text() == "/notify_add" || x.Callback() != nil {
 		x.Send(s.Bot.Text(x, "notify_add"), tb.NoPreview)
 		x.Respond()
@@ -275,10 +231,6 @@ func (s *Service) TgNotifyAdd(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgNotifyDel(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	if x.Text() == "/notify_del" || x.Callback() != nil {
 		x.Send(s.Bot.Text(x, "notify_del"), tb.NoPreview)
 		x.Respond()
@@ -318,10 +270,6 @@ func (s *Service) TgNotifyDel(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgLastRSS(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	feed := s.YouTube.LastRSS
 
 	str := fmt.Sprintf("[%v](%v)\n", feed.Title, feed.Link)
@@ -334,10 +282,6 @@ func (s *Service) TgLastRSS(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgTestNotify(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	content := &NotifyContent{
 		Type:    "",
 		Title:   "Название стрима",
@@ -386,10 +330,6 @@ func (s *Service) TgTestNotify(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgTypeOfVideo(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	if x.Text() == "/type_of_vid" {
 		x.Send(s.Bot.Text(x, "type_of_vid_empty"))
 		return

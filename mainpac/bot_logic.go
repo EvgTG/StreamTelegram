@@ -16,38 +16,22 @@ TgSome+Func       - логика работы
 */
 
 func (s *Service) TgStart(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	x.Send(s.Bot.Text(x, "start"), s.Bot.Markup(x, "remove_keyboard"))
 	return
 }
 
 func (s *Service) TgTest(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	x.Send("Test", s.Bot.Markup(x, "test"), tb.NoPreview)
 	return
 }
 
 func (s *Service) TgTestBtn(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	x.Send("Test", &tb.SendOptions{ReplyTo: x.Message()}, s.Bot.Markup(x, "test"), tb.NoPreview)
 	x.Respond(&tb.CallbackResponse{CallbackID: x.Callback().ID, Text: "test"})
 	return
 }
 
 func (s *Service) TgAdm(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	text := fmt.Sprintf("" +
 		"\n/start - приветствие" +
 		"\n/status - статус работы" +
@@ -68,10 +52,6 @@ func (s *Service) TgAdm(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgStatus(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	text, rm := s.TgStatusFunc(x)
 	mes, err := s.Bot.Send(x.Sender(), text, rm)
 	if err == nil && mes != nil {
@@ -81,10 +61,6 @@ func (s *Service) TgStatus(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgStatusUpdate(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	text, rm := s.TgStatusFunc(x)
 	_, err := s.Bot.Edit(x.Message(), text, rm)
 	if err != nil {
@@ -130,10 +106,6 @@ func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
 }
 
 func (s *Service) TgPause(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	s.YouTube.SetPause()
 	x.Respond()
 	s.TgStatusUpdate(x)
@@ -141,20 +113,12 @@ func (s *Service) TgPause(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgLogs(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	text := "1. Получить файл логов\n2. Очистить файл логов"
 	x.Send(text, s.Bot.Markup(x, "logs"))
 	return
 }
 
 func (s *Service) TgGetLogsBtn(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	_, err := s.Bot.Send(x.Sender(), &tb.Document{File: tb.FromDisk("files/logrus.log"), FileName: "logrus.log"})
 	if err != nil {
 		s.Bot.Send(x.Sender(), eris.Wrap(err, "Ошибка отправки файла.").Error())
@@ -164,10 +128,6 @@ func (s *Service) TgGetLogsBtn(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgClearLogsBtn(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	os.Truncate("files/logrus.log", 0)
 	log.Info("Очищено")
 
@@ -176,10 +136,6 @@ func (s *Service) TgClearLogsBtn(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgCallbackQuery(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	if x.Message().IsForwarded() {
 		x.Send(fmt.Sprintf("id <code>%v</code>", x.Message().OriginalChat.ID))
 	}
@@ -193,10 +149,6 @@ func (s *Service) TgCallbackQuery(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgSetCommands(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	err := x.Bot().SetCommands(s.Bot.Layout.Commands())
 	if err != nil {
 		x.Send(eris.Wrap(err, "x.Bot().SetCommands()").Error())
@@ -214,10 +166,6 @@ func (s *Service) TgDeleteBtn(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgCancelReplyMarkup(x tb.Context) (errReturn error) {
-	if s.Bot.isNotAdmin(x) {
-		return
-	}
-
 	delete(s.Bot.CallbackQuery, x.Chat().ID)
 	x.Send("Отменено.", &tb.ReplyMarkup{RemoveKeyboard: true})
 	return
