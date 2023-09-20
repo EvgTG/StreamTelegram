@@ -32,7 +32,27 @@ func (s *Service) TgSetChannelID(x tb.Context) (errReturn error) {
 		x.Send(eris.Wrap(err, "MiniDB.SetChannelID()").Error())
 		return
 	}
-	s.YouTube.ChannelID = id
+	s.YouTubeTwitch.ChannelID = id
+
+	x.Send(s.Bot.Text(x, "done"))
+	return
+}
+
+func (s *Service) TgSetTwitchNick(x tb.Context) (errReturn error) {
+	if x.Text() == "/set_twitch" {
+		x.Send(s.Bot.Text(x, "set_twitch_empty"))
+		return
+	}
+
+	nick := strings.Replace(x.Text(), "/set_twitch ", "", 1)
+	nick = strings.Replace(nick, " ", "", -1)
+
+	err := s.MiniDB.SetTwitchNick(nick)
+	if err != nil {
+		x.Send(eris.Wrap(err, "MiniDB.SetTwitchNick()").Error())
+		return
+	}
+	s.YouTubeTwitch.TwitchNick = nick
 
 	x.Send(s.Bot.Text(x, "done"))
 	return
@@ -77,19 +97,19 @@ func (s *Service) TgSetCycleDuration(x tb.Context) (errReturn error) {
 		x.Send(eris.Wrap(err, "MiniDB.SetCycleDuration()").Error())
 		return
 	}
-	s.YouTube.CycleDurationMinutes = dur
+	s.YouTubeTwitch.CycleDurationMinutes = dur
 
 	x.Send(s.Bot.Text(x, "done"))
 	return
 }
 
 func (s *Service) TgLocsFunc(x tb.Context) (string, *tb.ReplyMarkup) {
-	text := fmt.Sprintf("%v\n\n", s.YouTube.Locs)
+	text := fmt.Sprintf("%v\n\n", s.YouTubeTwitch.Locs)
 	tm := time.Now()
 
-	for _, locStr := range s.YouTube.Locs {
+	for _, locStr := range s.YouTubeTwitch.Locs {
 		loc, _ := time.LoadLocation(locStr)
-		text += tm.In(loc).Format(s.YouTube.TimeFormat) + "\n"
+		text += tm.In(loc).Format(s.YouTubeTwitch.TimeFormat) + "\n"
 	}
 
 	rm := s.Bot.Layout.Markup(x, "locs")
@@ -108,8 +128,8 @@ func (s *Service) TgLocsUpdateBtn(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgLocsClearBtn(x tb.Context) (errReturn error) {
-	s.YouTube.Locs = []string{}
-	err := s.MiniDB.SetLocs(s.YouTube.Locs)
+	s.YouTubeTwitch.Locs = []string{}
+	err := s.MiniDB.SetLocs(s.YouTubeTwitch.Locs)
 	if err != nil {
 		x.Send(err.Error())
 		x.Respond()
@@ -137,8 +157,8 @@ func (s *Service) TgSetLoc(x tb.Context) (errReturn error) {
 		return
 	}
 
-	s.YouTube.Locs = append(s.YouTube.Locs, loc.String())
-	err = s.MiniDB.SetLocs(s.YouTube.Locs)
+	s.YouTubeTwitch.Locs = append(s.YouTubeTwitch.Locs, loc.String())
+	err = s.MiniDB.SetLocs(s.YouTubeTwitch.Locs)
 	if err != nil {
 		x.Send(err.Error())
 		return
@@ -149,10 +169,10 @@ func (s *Service) TgSetLoc(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgLocsCity(x tb.Context) (errReturn error) {
-	s.YouTube.TimeCity = !s.YouTube.TimeCity
-	s.YouTube.TimeFormat = TimeFormatCity(s.YouTube.TimeCity)
+	s.YouTubeTwitch.TimeCity = !s.YouTubeTwitch.TimeCity
+	s.YouTubeTwitch.TimeFormat = TimeFormatCity(s.YouTubeTwitch.TimeCity)
 
-	err := s.MiniDB.SetTimeWithCity(s.YouTube.TimeCity)
+	err := s.MiniDB.SetTimeWithCity(s.YouTubeTwitch.TimeCity)
 	if err != nil {
 		x.Send(err.Error())
 		return
@@ -270,14 +290,29 @@ func (s *Service) TgNotifyDel(x tb.Context) (errReturn error) {
 }
 
 func (s *Service) TgLastRSS(x tb.Context) (errReturn error) {
-	feed := s.YouTube.LastRSS
+	if s.YouTubeTwitch.LastRSS_YT != nil {
+		feed_yt := s.YouTubeTwitch.LastRSS_YT
 
-	str := fmt.Sprintf("[%v](%v)\n", feed.Title, feed.Link)
-	for n, item := range feed.Items {
-		str += fmt.Sprintf("%v. [%v](%v)\n%v\n", n+1, item.Title, item.Link, item.UpdatedParsed.In(s.Loc).Format("2006 01.02 15*:*04"))
+		str1 := fmt.Sprintf("[%v](%v)\n", feed_yt.Title, feed_yt.Link)
+		for n, item := range feed_yt.Items {
+			str1 += fmt.Sprintf("%v. [%v](%v)\n%v\n", n+1, item.Title, item.Link, item.UpdatedParsed.In(s.Loc).Format("2006 01.02 15*:*04"))
+		}
+
+		x.Send(str1, &tb.SendOptions{ParseMode: tb.ModeMarkdown})
+
 	}
 
-	x.Send(str, &tb.SendOptions{ParseMode: tb.ModeMarkdown})
+	if s.YouTubeTwitch.LastRSS_TW != nil {
+		feed_tw := s.YouTubeTwitch.LastRSS_TW
+
+		str2 := fmt.Sprintf("%v\n", feed_tw.Title)
+		for n, item := range feed_tw.Items {
+			str2 += fmt.Sprintf("%v. %v\n%v\n", n+1, item.Title, item.PublishedParsed.In(s.Loc).Format("2006 01.02 15*:*04"))
+		}
+
+		x.Send(str2, &tb.SendOptions{ParseMode: tb.ModeMarkdown})
+	}
+
 	return
 }
 
@@ -292,6 +327,11 @@ func (s *Service) TgTestNotify(x tb.Context) (errReturn error) {
 
 	// Live
 	content.Type = util.Live
+	s.SendNotify(content)
+	time.Sleep(time.Millisecond * 500)
+
+	// Live Twitch
+	content.Type = util.LiveTwitch
 	s.SendNotify(content)
 	time.Sleep(time.Millisecond * 500)
 

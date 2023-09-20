@@ -18,14 +18,15 @@ type Service struct {
 	Loc    *time.Location
 	Rand   *rand.Rand
 
-	YouTube *YouTube
+	YouTubeTwitch *YouTubeTwitch
 }
 
-type YouTube struct {
+type YouTubeTwitch struct {
 	Parser   *gofeed.Parser
 	LogLevel string
 
-	LastRSS          gofeed.Feed
+	LastRSS_YT       *gofeed.Feed
+	LastRSS_TW       *gofeed.Feed
 	LastTime         time.Time
 	NumberIterations int
 
@@ -34,6 +35,7 @@ type YouTube struct {
 	PauseWaitChannel chan struct{}
 
 	ChannelID            string
+	TwitchNick           string
 	CycleDurationMinutes int // minutes
 
 	Locs       []string
@@ -69,7 +71,7 @@ func (s Service) Start() {
 	log.Info("tgbot launch...")
 	fmt.Println("tgbot @" + s.Bot.Me.Username)
 	go s.GoCheckErrs()
-	go s.GoYouTube()
+	go s.GoYouTubeTwitch()
 	s.Bot.Start()
 }
 

@@ -20,6 +20,7 @@ func (s *Service) InitBot() {
 	adminOnly.Handle("/logs", s.TgLogs)
 	adminOnly.Handle("/set_commands", s.TgSetCommands)
 	adminOnly.Handle("/set_channel", s.TgSetChannelID)
+	adminOnly.Handle("/set_twitch", s.TgSetTwitchNick)
 	adminOnly.Handle("/get_channel", s.TgGetChannelID)
 	adminOnly.Handle("/set_dur", s.TgSetCycleDuration)
 	adminOnly.Handle("/locs", s.TgLocs)

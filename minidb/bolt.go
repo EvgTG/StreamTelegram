@@ -11,7 +11,8 @@ import (
 type MiniDB struct {
 	bolt *bolt.DB
 
-	videoIDs []string
+	videoIDs  []string //youtube
+	tvideoIDs []string //twitch
 }
 
 func NewDB() (*MiniDB, error) {
@@ -29,6 +30,11 @@ func NewDB() (*MiniDB, error) {
 	err = mini.GetVideoIDs()
 	if err != nil && err != ErrKeyNotFound {
 		return nil, eris.Wrap(err, "mini.GetVideoIDs()")
+	}
+
+	err = mini.GetTwitchVideoIDs()
+	if err != nil && err != ErrKeyNotFound {
+		return nil, eris.Wrap(err, "mini.GetTwitchVideoIDs()")
 	}
 
 	return &mini, nil

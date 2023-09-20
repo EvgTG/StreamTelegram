@@ -39,6 +39,7 @@ func (s *Service) TgAdm(x tb.Context) (errReturn error) {
 		"\n/test_notify - проверка уведомлений" +
 		"\n/set_commands - установить меню бота" +
 		"\n\n/set_channel - установить канал" +
+		"\n/set_twitch - установить twitch ник" +
 		"\n/get_channel - получить id канала" +
 		"\n/set_dur - время обновления информации" +
 		"\n/notify - каналы для вывода уведомлений" +
@@ -77,11 +78,11 @@ func (s *Service) TgStatusUpdate(x tb.Context) (errReturn error) {
 
 func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
 	pause := false
-	s.YouTube.PauseMutex.Lock()
-	if s.YouTube.Pause > 0 {
+	s.YouTubeTwitch.PauseMutex.Lock()
+	if s.YouTubeTwitch.Pause > 0 {
 		pause = true
 	}
-	s.YouTube.PauseMutex.Unlock()
+	s.YouTubeTwitch.PauseMutex.Unlock()
 
 	text := fmt.Sprintf(""+
 		"Launch time: %s"+
@@ -89,15 +90,17 @@ func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
 		"\nPause: %v"+
 		"\n"+
 		"\nChannel ID: <a href=\"youtube.com/channel/%s\">%s</a>"+
+		"\nTwitch nick: %v"+
 		"\nCycle duration: %vmin"+
 		"\nN iterations: %v"+
 		"\nLast check: %s"+
 		"\n<a href=\"%s\">RSS url</a>",
 
 		s.Bot.Uptime.In(s.Loc).Format("2006.01.02 15:04:05 MST"), s.Bot.uptimeString(s.Bot.Uptime), pause,
-		s.YouTube.ChannelID, s.YouTube.ChannelID, s.YouTube.CycleDurationMinutes, s.YouTube.NumberIterations,
-		s.YouTube.LastTime.In(s.Loc).Format("2006.01.02 15:04:05 MST"),
-		"https://www.youtube.com/feeds/videos.xml?channel_id="+s.YouTube.ChannelID,
+		s.YouTubeTwitch.ChannelID, s.YouTubeTwitch.ChannelID, s.YouTubeTwitch.TwitchNick,
+		s.YouTubeTwitch.CycleDurationMinutes, s.YouTubeTwitch.NumberIterations,
+		s.YouTubeTwitch.LastTime.In(s.Loc).Format("2006.01.02 15:04:05 MST"),
+		"https://www.youtube.com/feeds/videos.xml?channel_id="+s.YouTubeTwitch.ChannelID,
 	)
 
 	rm := s.Bot.Markup(x, "status")
@@ -106,7 +109,7 @@ func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
 }
 
 func (s *Service) TgPause(x tb.Context) (errReturn error) {
-	s.YouTube.SetPause()
+	s.YouTubeTwitch.SetPause()
 	x.Respond()
 	s.TgStatusUpdate(x)
 	return

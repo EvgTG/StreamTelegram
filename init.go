@@ -65,9 +65,12 @@ func NewService(db *minidb.MiniDB) *mainpac.Service {
 	util.ErrCheckFatal(err, "tb.NewBot()", "NewService", "init")
 	bot.Use(lt.Middleware("ru"))
 
-	// YouTube
+	// YouTube Twitch
 	channelID, err := db.GetChannelID()
 	util.ErrCheckFatal(err, "db.GetChannelID()", "NewService", "init")
+
+	twitchNick, err := db.GetTwitchNick()
+	util.ErrCheckFatal(err, "db.GetTwitchNick()", "NewService", "init")
 
 	cycleDuration, err := db.GetCycleDuration()
 	util.ErrCheckFatal(err, "db.GetCycleDuration()", "NewService", "init")
@@ -100,7 +103,7 @@ func NewService(db *minidb.MiniDB) *mainpac.Service {
 		Loc:    CFG.TimeLocation.Get(),
 		Rand:   rand.New(rand.NewSource(time.Now().UnixNano())),
 
-		YouTube: &mainpac.YouTube{
+		YouTubeTwitch: &mainpac.YouTubeTwitch{
 			Parser:               gofeed.NewParser(),
 			LogLevel:             CFG.LogLevel,
 			LastTime:             time.Unix(0, 0),
@@ -109,6 +112,7 @@ func NewService(db *minidb.MiniDB) *mainpac.Service {
 			Pause:                0,
 			PauseWaitChannel:     make(chan struct{}),
 			ChannelID:            channelID,
+			TwitchNick:           twitchNick,
 			CycleDurationMinutes: cycleDuration,
 			Locs:                 locs,
 			TimeFormat:           mainpac.TimeFormatCity(timeWithCity),

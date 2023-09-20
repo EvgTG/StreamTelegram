@@ -9,38 +9,39 @@ import (
 	"time"
 )
 
-func (s *Service) GoYouTube() {
+func (s *Service) GoYouTubeTwitch() {
 	for {
 		s.YouTubeCheck()
+		s.TwitchCheck()
 
-		s.YouTube.NumberIterations++
-		s.YouTube.LastTime = time.Now()
-		time.Sleep(time.Minute * time.Duration(s.YouTube.CycleDurationMinutes))
+		s.YouTubeTwitch.NumberIterations++
+		s.YouTubeTwitch.LastTime = time.Now()
+		time.Sleep(time.Minute * time.Duration(s.YouTubeTwitch.CycleDurationMinutes))
 
 		// Pause
-		s.YouTube.PauseMutex.Lock()
-		if s.YouTube.Pause == 1 {
-			s.YouTube.Pause = 2
-			s.YouTube.PauseMutex.Unlock()
-			<-s.YouTube.PauseWaitChannel
+		s.YouTubeTwitch.PauseMutex.Lock()
+		if s.YouTubeTwitch.Pause == 1 {
+			s.YouTubeTwitch.Pause = 2
+			s.YouTubeTwitch.PauseMutex.Unlock()
+			<-s.YouTubeTwitch.PauseWaitChannel
 		} else {
-			s.YouTube.PauseMutex.Unlock()
+			s.YouTubeTwitch.PauseMutex.Unlock()
 		}
 	}
 }
 
 func (s *Service) YouTubeCheck() {
-	if s.YouTube.ChannelID == "" {
+	if s.YouTubeTwitch.ChannelID == "" || s.YouTubeTwitch.ChannelID == "UCBR8-60-B28hp2BmDPdntcQ" {
 		return
 	}
 
 	// получение rss
-	feed, err := s.YouTube.Parser.ParseURL("https://www.youtube.com/feeds/videos.xml?channel_id=" + s.YouTube.ChannelID)
+	feed, err := s.YouTubeTwitch.Parser.ParseURL("https://www.youtube.com/feeds/videos.xml?channel_id=" + s.YouTubeTwitch.ChannelID)
 	if err != nil {
 		log.Error(eris.Wrap(err, "YouTubeCheck - ParseURL()"))
 		return
 	}
-	s.YouTube.LastRSS = *feed
+	s.YouTubeTwitch.LastRSS_YT = feed
 
 	type item struct {
 		id, title string
@@ -74,7 +75,7 @@ func (s *Service) YouTubeCheck() {
 	for _, itm := range items {
 		log.Infof("YouTubeCheck new item %v %v", itm.id, itm.title)
 
-		typeVideo, timePub, err := util.TypeVideo(itm.id, s.YouTube.DebugLevel())
+		typeVideo, timePub, err := util.TypeVideo(itm.id, s.YouTubeTwitch.DebugLevel())
 		if err != nil {
 			log.Error(eris.Wrap(err, "YouTubeCheck util.TypeVideo()"))
 			time.Sleep(time.Second * 10)
@@ -111,7 +112,7 @@ func (s *Service) GoStartWait(content *NotifyContent) {
 
 	time.Sleep(time.Second*time.Duration(content.TimePub.Unix()-time.Now().Unix()) + 35)
 	for i := 0; i < 30; i++ {
-		typeVideo, _, err := util.TypeVideo(content.VideoID, s.YouTube.DebugLevel())
+		typeVideo, _, err := util.TypeVideo(content.VideoID, s.YouTubeTwitch.DebugLevel())
 		log.Debug("GoStartWait for", content.VideoID, typeVideo)
 		if err != nil {
 			log.Error(eris.Wrap(err, "GoStartWait util.TypeVideo()"))
@@ -153,7 +154,7 @@ func (s *Service) GoEndWait(content *NotifyContent) {
 	for {
 		time.Sleep(time.Minute * 7)
 
-		typeVideo, _, err := util.TypeVideo(content.VideoID, s.YouTube.DebugLevel())
+		typeVideo, _, err := util.TypeVideo(content.VideoID, s.YouTubeTwitch.DebugLevel())
 		if err != nil {
 			log.Error(eris.Wrap(err, "GoEndWait util.TypeVideo()"))
 			continue
@@ -175,15 +176,15 @@ func (s *Service) GoEndWait(content *NotifyContent) {
 			break
 		}
 	}
-
 }
 
 type NotifyContent struct {
-	Type    string
-	Title   string
-	VideoID string
-	Time    string
-	TimePub *time.Time
+	Type       string
+	TwitchNick string
+	Title      string
+	VideoID    string
+	Time       string
+	TimePub    *time.Time
 }
 
 func (s *Service) SendNotify(content *NotifyContent) {
@@ -201,14 +202,14 @@ func (s *Service) SendNotify(content *NotifyContent) {
 			content.Time = ""
 
 			bl := false
-			for _, locStr := range s.YouTube.Locs {
+			for _, locStr := range s.YouTubeTwitch.Locs {
 				loc, err := time.LoadLocation(locStr)
 				if err != nil {
 					log.Error(eris.Wrap(err, "SendNotify time.LoadLocation(locStr)"))
 					continue
 				}
 
-				tmFormat := s.YouTube.TimeFormat
+				tmFormat := s.YouTubeTwitch.TimeFormat
 				if content.TimePub.In(loc).YearDay() == now.In(loc).YearDay() && content.TimePub.In(loc).Year() == now.In(loc).Year() {
 					tmFormat = strings.Replace(tmFormat, "2 Jan ", "", 1)
 				}
@@ -235,7 +236,7 @@ func (s *Service) SendNotify(content *NotifyContent) {
 			if err != nil {
 				log.Error(eris.Wrap(err, "SendNotify LiveGo"))
 			}
-		case util.End:
+		case util.End, util.EndTwitch:
 			if !channel.EndOfStream {
 				continue
 			}
@@ -244,7 +245,7 @@ func (s *Service) SendNotify(content *NotifyContent) {
 			if err != nil {
 				log.Error(eris.Wrap(err, "SendNotify End"))
 			}
-		case util.End404:
+		case util.End404, util.EndTwitch404:
 			if !channel.EndOfStream {
 				continue
 			}
@@ -253,11 +254,16 @@ func (s *Service) SendNotify(content *NotifyContent) {
 			if err != nil {
 				log.Error(eris.Wrap(err, "SendNotify End404"))
 			}
+		case util.LiveTwitch:
+			_, err := s.Bot.Send(&tb.User{ID: channel.ID}, s.Bot.TextLocale("ru", "live_twitch", content), tb.NoPreview)
+			if err != nil {
+				log.Error(eris.Wrap(err, "SendNotify LiveTwitch"))
+			}
 		}
 	}
 }
 
-func (y *YouTube) SetPause() {
+func (y *YouTubeTwitch) SetPause() {
 	y.PauseMutex.Lock()
 	defer y.PauseMutex.Unlock()
 
@@ -272,6 +278,6 @@ func (y *YouTube) SetPause() {
 	}
 }
 
-func (y *YouTube) DebugLevel() bool {
+func (y *YouTubeTwitch) DebugLevel() bool {
 	return strings.ToLower(y.LogLevel) == "debug"
 }
