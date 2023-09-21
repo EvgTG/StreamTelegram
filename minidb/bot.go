@@ -10,16 +10,6 @@ func (mini *MiniDB) GetChannelID() (string, error) {
 	return id, err
 }
 
-func (mini *MiniDB) SetTwitchNick(nick string) error {
-	return mini.write("twitchnick", nick)
-}
-
-func (mini *MiniDB) GetTwitchNick() (string, error) {
-	var nick string
-	err := mini.read("twitchnick", &nick)
-	return nick, err
-}
-
 func (mini *MiniDB) SetCycleDuration(dur int) error {
 	return mini.write("dur", dur)
 }
