@@ -1,6 +1,6 @@
 # StreamTelegram
-Notifications about YouTube streams in Telegram.  
-Уведомления о YouTube стримах в Телеграм.
+Notifications about YouTube/Twitch streams in Telegram.  
+Уведомления о YouTube/Twitch стримах в Телеграм.
 ### Docker
 ```
 docker build --platform linux/amd64 -t streamtelegram:latest -t streamtelegram:1.x.x .

@@ -1,4 +1,6 @@
 files/
+sh/
+Makefile
 
 # ide
 .idea
