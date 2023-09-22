@@ -200,6 +200,8 @@ func (t *Twitch) refreshAuth() error {
 		return eris.Wrap(err, "t.db.SetRefreshToken()")
 	}
 
+	t.client.SetUserAccessToken(t.accessToken)
+
 	return nil
 }
 
