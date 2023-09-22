@@ -13,6 +13,7 @@ import (
 	"streamtg/go-log"
 	"streamtg/mainpac"
 	"streamtg/minidb"
+	"streamtg/twitch"
 	"streamtg/util"
 	"sync"
 	"time"
@@ -66,6 +67,9 @@ func NewService(db *minidb.MiniDB) *mainpac.Service {
 	bot.Use(lt.Middleware("ru"))
 
 	// YouTube Twitch
+	twitch, err := twitch.NewTwitch(db)
+	util.ErrCheckFatal(err, "twitch.NewTwitch()", "NewService", "init")
+
 	channelID, err := db.GetChannelID()
 	util.ErrCheckFatal(err, "db.GetChannelID()", "NewService", "init")
 
@@ -106,6 +110,7 @@ func NewService(db *minidb.MiniDB) *mainpac.Service {
 		YouTubeTwitch: &mainpac.YouTubeTwitch{
 			Parser:               gofeed.NewParser(),
 			LogLevel:             CFG.LogLevel,
+			Twitch:               twitch,
 			LastTime:             time.Unix(0, 0),
 			NumberIterations:     0,
 			PauseMutex:           sync.Mutex{},

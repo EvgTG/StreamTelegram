@@ -302,17 +302,6 @@ func (s *Service) TgLastRSS(x tb.Context) (errReturn error) {
 
 	}
 
-	if s.YouTubeTwitch.LastRSS_TW != nil {
-		feed_tw := s.YouTubeTwitch.LastRSS_TW
-
-		str2 := fmt.Sprintf("%v\n", feed_tw.Title)
-		for n, item := range feed_tw.Items {
-			str2 += fmt.Sprintf("%v. %v\n%v\n", n+1, item.Title, item.PublishedParsed.In(s.Loc).Format("2006 01.02 15*:*04"))
-		}
-
-		x.Send(str2, &tb.SendOptions{ParseMode: tb.ModeMarkdown})
-	}
-
 	return
 }
 
@@ -397,5 +386,66 @@ func (s *Service) TgTypeOfVideo(x tb.Context) (errReturn error) {
 	}
 	text := fmt.Sprintf("type: %v\ntime: %v", typeVid, textTime)
 	x.Send(text)
+	return
+}
+
+func (s *Service) TgTwitchClient(x tb.Context) (errReturn error) {
+	if x.Text() == "/set_twitch_client" {
+		x.Send(s.Bot.Text(x, "set_twitch_client_empty"))
+		return
+	}
+
+	strs := strings.Split(strings.Replace(x.Text(), "/set_twitch_client ", "", 1), " ")
+	if len(strs) != 2 {
+		x.Send(s.Bot.Text(x, "set_twitch_client_err_len"))
+		return
+	}
+
+	err := s.YouTubeTwitch.Twitch.SetClient(strs[0], strs[1])
+	if err != nil {
+		x.Send(eris.Wrap(err, "Ошибка"))
+		return
+	}
+
+	x.Send(s.Bot.Text(x, "done"))
+	return
+}
+
+func (s *Service) TgTwitchAuthURL(x tb.Context) (errReturn error) {
+	if !s.YouTubeTwitch.Twitch.ClientOK() {
+		x.Send(s.Bot.Text(x, "twitch_auth_url_err"))
+		return
+	}
+
+	url, err := s.YouTubeTwitch.Twitch.GetAuthURL()
+	if err != nil {
+		x.Send(eris.Wrap(err, "Ошибка"))
+		return
+	}
+
+	x.Send(url, tb.NoPreview)
+	x.Send(s.Bot.Text(x, "twitch_auth_url"))
+	return
+}
+
+func (s *Service) TgTwitchAuth(x tb.Context) (errReturn error) {
+	if !s.YouTubeTwitch.Twitch.ClientOK() {
+		x.Send(s.Bot.Text(x, "twitch_auth_url_err"))
+		return
+	}
+
+	if x.Text() == "/twitch_auth" {
+		x.Send(s.Bot.Text(x, "twitch_auth_empty"))
+		return
+	}
+
+	code := strings.NewReplacer("/twitch_auth", "", " ", "", "http://localhost/?code=", "", "&scope=user%3Aread%3Aemail&state=some-state", "").Replace(x.Text())
+	err := s.YouTubeTwitch.Twitch.SetCode(code)
+	if err != nil {
+		x.Send(eris.Wrap(err, "Ошибка"))
+		return
+	}
+
+	x.Send(s.Bot.Text(x, "done"))
 	return
 }

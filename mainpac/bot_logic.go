@@ -36,16 +36,21 @@ func (s *Service) TgAdm(x tb.Context) (errReturn error) {
 		"\n/start - приветствие" +
 		"\n/status - статус работы" +
 		"\n/logs - действия над логами" +
-		"\n/test_notify - проверка уведомлений" +
 		"\n/set_commands - установить меню бота" +
-		"\n\n/set_channel - установить канал" +
-		"\n/set_twitch - установить twitch ник" +
-		"\n/get_channel - получить id канала" +
-		"\n/set_dur - время обновления информации" +
+		"\n/set_dur - время проверки стримов" +
 		"\n/notify - каналы для вывода уведомлений" +
+		"\n/test_notify - проверка уведомлений" +
 		"\n/locs - настройка часовых поясов в уведомлениях" +
+		"\n\nYouTube" +
+		"\n/set_channel - установить канал" +
+		"\n/get_channel - получить id канала" +
+		"\n/type_of_vid - получить тип видео" +
 		"\n/last_rss - последние видео" +
-		"\n/type_of_vid - тип видео",
+		"\n\nTwitch" +
+		"\n/set_twitch_client - настройка клиента" +
+		"\n/twitch_auth_url - ссылка для аутентификации" +
+		"\n/twitch_auth - аутентификация" +
+		"\n/set_twitch - установить twitch ник",
 	)
 
 	x.Send(text)
@@ -54,7 +59,7 @@ func (s *Service) TgAdm(x tb.Context) (errReturn error) {
 
 func (s *Service) TgStatus(x tb.Context) (errReturn error) {
 	text, rm := s.TgStatusFunc(x)
-	mes, err := s.Bot.Send(x.Sender(), text, rm)
+	mes, err := s.Bot.Send(x.Sender(), text, rm, tb.NoPreview)
 	if err == nil && mes != nil {
 		s.Bot.Pin(mes)
 	}
@@ -63,7 +68,7 @@ func (s *Service) TgStatus(x tb.Context) (errReturn error) {
 
 func (s *Service) TgStatusUpdate(x tb.Context) (errReturn error) {
 	text, rm := s.TgStatusFunc(x)
-	_, err := s.Bot.Edit(x.Message(), text, rm)
+	_, err := s.Bot.Edit(x.Message(), text, rm, tb.NoPreview)
 	if err != nil {
 		s.Bot.Delete(x.Message())
 		mes, err := s.Bot.Send(x.Sender(), text, rm)
@@ -90,14 +95,16 @@ func (s *Service) TgStatusFunc(x tb.Context) (string, *tb.ReplyMarkup) {
 		"\nPause: %v"+
 		"\n"+
 		"\nChannel ID: <a href=\"youtube.com/channel/%s\">%s</a>"+
-		"\nTwitch nick: %v"+
+		"\nTwitch nick: <a href=\"twitch.tv/%s\">%s</a>"+
+		"\nTwitch client-%v auth-%v"+
 		"\nCycle duration: %vmin"+
 		"\nN iterations: %v"+
 		"\nLast check: %s"+
 		"\n<a href=\"%s\">RSS url</a>",
 
 		s.Bot.Uptime.In(s.Loc).Format("2006.01.02 15:04:05 MST"), s.Bot.uptimeString(s.Bot.Uptime), pause,
-		s.YouTubeTwitch.ChannelID, s.YouTubeTwitch.ChannelID, s.YouTubeTwitch.TwitchNick,
+		s.YouTubeTwitch.ChannelID, s.YouTubeTwitch.ChannelID, s.YouTubeTwitch.TwitchNick, s.YouTubeTwitch.TwitchNick,
+		s.YouTubeTwitch.Twitch.ClientOK(), s.YouTubeTwitch.Twitch.AuthOK(),
 		s.YouTubeTwitch.CycleDurationMinutes, s.YouTubeTwitch.NumberIterations,
 		s.YouTubeTwitch.LastTime.In(s.Loc).Format("2006.01.02 15:04:05 MST"),
 		"https://www.youtube.com/feeds/videos.xml?channel_id="+s.YouTubeTwitch.ChannelID,

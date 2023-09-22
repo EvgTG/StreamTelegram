@@ -1,10 +1,11 @@
 package twitch
 
 import (
-	"TestProject/minidb"
 	"fmt"
 	"github.com/nicklaw5/helix/v2"
 	"github.com/rotisserie/eris"
+	"streamtg/minidb"
+	"sync"
 )
 
 type Twitch struct {
@@ -14,6 +15,8 @@ type Twitch struct {
 	client *helix.Client
 
 	db *minidb.MiniDB
+
+	mutex sync.Mutex
 }
 
 func NewTwitch(db *minidb.MiniDB) (*Twitch, error) {
@@ -49,6 +52,10 @@ func (t *Twitch) reloadClient_1() error {
 		}
 	}
 
+	if !t.ClientOK() {
+		return nil
+	}
+
 	t.client, err = helix.NewClient(&helix.Options{
 		ClientID:     t.clientID,
 		ClientSecret: t.clientSecret,
@@ -75,6 +82,10 @@ func (t *Twitch) reloadClient_2() error {
 		if err != nil {
 			return eris.Wrap(err, "GetRefreshToken")
 		}
+	}
+
+	if !t.AuthOK() {
+		return nil
 	}
 
 	t.client.SetUserAccessToken(t.accessToken)
@@ -159,6 +170,8 @@ func (t *Twitch) SetCode(code string) error {
 	if err != nil {
 		return eris.Wrap(err, "t.db.SetRefreshToken()")
 	}
+
+	t.client.SetUserAccessToken(t.accessToken)
 
 	return nil
 }

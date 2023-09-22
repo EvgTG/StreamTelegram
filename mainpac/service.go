@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"streamtg/go-log"
 	"streamtg/minidb"
+	"streamtg/twitch"
 	"sync"
 	"time"
 )
@@ -25,8 +26,9 @@ type YouTubeTwitch struct {
 	Parser   *gofeed.Parser
 	LogLevel string
 
+	Twitch *twitch.Twitch
+
 	LastRSS_YT       *gofeed.Feed
-	LastRSS_TW       *gofeed.Feed
 	LastTime         time.Time
 	NumberIterations int
 

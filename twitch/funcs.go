@@ -7,6 +7,13 @@ import (
 )
 
 func (t *Twitch) GetStream(nick string) (*helix.Stream, error) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	if !t.ClientOK() || !t.AuthOK() {
+		return nil, nil
+	}
+
 	resp, err := t.client.GetStreams(&helix.StreamsParams{UserLogins: []string{nick}})
 	if err != nil {
 		return nil, eris.Wrap(err, "t.client.GetStreams()")
@@ -31,7 +38,7 @@ func (t *Twitch) GetStream(nick string) (*helix.Stream, error) {
 	}
 
 	if len(resp.Data.Streams) < 1 {
-		return nil, eris.New("resp.Data.Streams len 0")
+		return nil, nil
 	}
 
 	return &resp.Data.Streams[0], nil

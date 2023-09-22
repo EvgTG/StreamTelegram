@@ -12,14 +12,16 @@ func (s *Service) TwitchCheck() {
 		return
 	}
 
-	// получение rss
-	feed, err := s.YouTubeTwitch.Parser.ParseURL("https://twitchrss.appspot.com/vod/" + s.YouTubeTwitch.TwitchNick)
+	// получение стрима
+	stream, err := s.YouTubeTwitch.Twitch.GetStream(s.YouTubeTwitch.TwitchNick)
 	if err != nil {
-		log.Error(eris.Wrap(err, "TwitchCheck - ParseURL()"))
+		log.Error(eris.Wrap(err, "TwitchCheck - s.YouTubeTwitch.Twitch.GetStream(nick)"))
 		return
 	}
-	util.ClearFeed(feed)
-	s.YouTubeTwitch.LastRSS_TW = feed
+
+	if stream == nil {
+		return
+	}
 
 	type item struct {
 		id, title string
@@ -27,59 +29,37 @@ func (s *Service) TwitchCheck() {
 		timePub   *time.Time
 	}
 
-	// проверка на новые видео
-	items := make([]item, 0, 1)
-	for _, value := range feed.Items {
-		repetition, err := s.MiniDB.CheckTwitchVideo(value.GUID)
-		if err != nil {
-			log.Error(eris.Wrap(err, "TwitchCheck - MiniDB.CheckTwitchVideo(videoID)"))
-			return
-		}
-
-		if repetition {
-			continue
-		}
-		items = append(items, item{
-			id:      value.GUID,
-			title:   value.Title,
-			isLive:  util.IsTwitchLiveItem(value),
-			timePub: value.PublishedParsed,
-		})
+	// проверка на новинку
+	repetition, err := s.MiniDB.CheckTwitchVideo(stream.ID)
+	if err != nil {
+		log.Error(eris.Wrap(err, "TwitchCheck - MiniDB.CheckTwitchVideo(videoID)"))
+		return
 	}
-
-	if len(items) == 0 {
+	if repetition {
 		return
 	}
 
-	// обработка новых видео
-	var typeVideo string
-	for _, itm := range items {
-		log.Infof("TwitchCheck new item %v %v", itm.id, itm.title)
-
-		if itm.isLive {
-			typeVideo = util.LiveTwitch
-		} else {
-			typeVideo = util.ArchiveTwitch
-		}
-
-		content := &NotifyContent{
-			Type:       typeVideo,
-			TwitchNick: s.YouTubeTwitch.TwitchNick,
-			Title:      itm.title,
-			VideoID:    itm.id,
-			Time:       "",
-			TimePub:    itm.timePub,
-		}
-
-		switch typeVideo {
-		case util.LiveTwitch:
-			s.SendNotify(content)
-			go s.GoEndWaitTwitch(content)
-		}
-
-		time.Sleep(time.Second * 1)
+	itm := item{
+		id:      stream.ID,
+		title:   stream.Title,
+		isLive:  true,
+		timePub: &stream.StartedAt,
 	}
 
+	// обработка нового стрима
+	log.Infof("TwitchCheck new item %v %v", itm.id, itm.title)
+
+	content := &NotifyContent{
+		Type:       util.LiveTwitch,
+		TwitchNick: s.YouTubeTwitch.TwitchNick,
+		Title:      itm.title,
+		VideoID:    itm.id,
+		Time:       "",
+		TimePub:    itm.timePub,
+	}
+
+	s.SendNotify(content)
+	go s.GoEndWaitTwitch(content)
 }
 
 func (s *Service) GoEndWaitTwitch(content *NotifyContent) {
@@ -101,34 +81,15 @@ func (s *Service) GoEndWaitTwitch(content *NotifyContent) {
 	for {
 		time.Sleep(time.Minute * 7)
 
-		feed, err := s.YouTubeTwitch.Parser.ParseURL("https://twitchrss.appspot.com/vod/" + s.YouTubeTwitch.TwitchNick)
+		stream, err := s.YouTubeTwitch.Twitch.GetStream(s.YouTubeTwitch.TwitchNick)
 		if err != nil {
-			log.Error(eris.Wrap(err, "GoEndWaitTwitch - ParseURL()"))
+			log.Error(eris.Wrap(err, "TwitchCheck - s.YouTubeTwitch.Twitch.GetStream(nick)"))
 			return
 		}
-		util.ClearFeed(feed)
 
-		br := false
-		ok := false
-		for _, item := range feed.Items {
-			if item.GUID != content.VideoID {
-				continue
-			}
-
-			ok = true
-			if !util.IsTwitchLiveItem(item) {
-				content.Type = util.EndTwitch
-				s.SendNotify(content)
-				br = true
-			}
-		}
-		if br {
-			break
-		}
-		if !ok {
-			content.Type = util.EndTwitch404
+		if stream == nil || stream.ID != content.VideoID {
+			content.Type = util.EndTwitch
 			s.SendNotify(content)
-			break
 		}
 	}
 
