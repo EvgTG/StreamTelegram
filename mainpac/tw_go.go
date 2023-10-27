@@ -90,6 +90,7 @@ func (s *Service) GoEndWaitTwitch(content *NotifyContent) {
 		if stream == nil || stream.ID != content.VideoID {
 			content.Type = util.EndTwitch
 			s.SendNotify(content)
+			break
 		}
 	}
 
