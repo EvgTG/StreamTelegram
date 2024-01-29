@@ -1,12 +1,14 @@
 package mainpac
 
 import (
-	"github.com/rotisserie/eris"
-	tb "gopkg.in/tucnak/telebot.v3"
-	"streamtg/go-log"
-	"streamtg/util"
 	"strings"
 	"time"
+
+	"streamtg/go-log"
+	"streamtg/util"
+
+	"github.com/rotisserie/eris"
+	tb "gopkg.in/telebot.v3"
 )
 
 func (s *Service) GoYouTubeTwitch() {

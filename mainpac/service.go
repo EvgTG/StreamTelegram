@@ -2,15 +2,17 @@ package mainpac
 
 import (
 	"fmt"
-	"github.com/mmcdole/gofeed"
-	tb "gopkg.in/tucnak/telebot.v3"
-	"gopkg.in/tucnak/telebot.v3/layout"
 	"math/rand"
+	"sync"
+	"time"
+
 	"streamtg/go-log"
 	"streamtg/minidb"
 	"streamtg/twitch"
-	"sync"
-	"time"
+
+	"github.com/mmcdole/gofeed"
+	tb "gopkg.in/telebot.v3"
+	"gopkg.in/telebot.v3/layout"
 )
 
 type Service struct {
@@ -64,7 +66,7 @@ type Bot struct {
 	Username string
 	Uptime   time.Time
 
-	CallbackQuery map[int64]string //контекстный ввод
+	CallbackQuery map[int64]string // контекстный ввод
 }
 
 func (s Service) Start() {

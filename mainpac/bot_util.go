@@ -2,10 +2,12 @@ package mainpac
 
 import (
 	"fmt"
-	tb "gopkg.in/tucnak/telebot.v3"
-	"streamtg/util"
 	"strings"
 	"time"
+
+	"streamtg/util"
+
+	tb "gopkg.in/telebot.v3"
 )
 
 func (bot *Bot) isNotAdmin(x tb.Context) bool {

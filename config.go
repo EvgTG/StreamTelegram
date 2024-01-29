@@ -1,24 +1,34 @@
 package main
 
 import (
-	"github.com/rotisserie/eris"
 	"time"
+
+	"github.com/rotisserie/eris"
 )
 
 var CFG InitConfig
 
 type InitConfig struct {
-	LogLevel string `env:"LOGLVL" env-default:"INFO"`
+	LogLevel string `env:"LOG_LVL" env-default:"INFO"`
 
-	ProxyTG      string         `env:"PROXYTG"`
-	TgApiToken   string         `env:"TOKENTG"`
-	UserList     []int64        `env:"USERLIST"`
-	AdminList    []int64        `env:"ADMINLIST"`
-	ErrorList    []int64        `env:"ERRORLIST"`
+	ProxyTG      string         `env:"TG_PROXY"`
+	TgApiToken   string         `env:"TG_TOKEN"`
+	UserList     []int64        `env:"LIST_USER"`
+	AdminList    []int64        `env:"LIST_ADMIN"`
+	NotifyList   []int64        `env:"LIST_NOTIFY"`
+	ErrorList    []int64        `env:"LIST_ERROR"`
 	TimeLocation MyTimeLocation `env:"LOC" env-default:"UTC"`
 
-	PingPort string `env:"PINGPORT" env-default:"6975"`
-	PingOn   bool   `env:"PINGON" env-default:"false"`
+	// TG Webhook
+	IP          string `env:"WH_IP"`
+	Path        string `env:"WH_PATH"`
+	Port        string `env:"WH_PORT" env-default:"8443"`
+	LocalPort   string `env:"WH_LOCAL_PORT"`
+	SecretToken string `env:"WH_SEC"`
+
+	// Ping
+	PingPort string `env:"PING_PORT" env-default:"6970"`
+	PingOn   bool   `env:"PING_ON" env-default:"false"`
 }
 
 type MyTimeLocation string

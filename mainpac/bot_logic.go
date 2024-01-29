@@ -2,10 +2,12 @@ package mainpac
 
 import (
 	"fmt"
-	"github.com/rotisserie/eris"
-	tb "gopkg.in/tucnak/telebot.v3"
 	"os"
+
 	"streamtg/go-log"
+
+	"github.com/rotisserie/eris"
+	tb "gopkg.in/telebot.v3"
 )
 
 /*
@@ -151,7 +153,7 @@ func (s *Service) TgCallbackQuery(x tb.Context) (errReturn error) {
 	}
 
 	switch s.Bot.CallbackQuery[x.Chat().ID] {
-	case "": //Нет в CallbackQuery - игнор
+	case "": // Нет в CallbackQuery - игнор
 	case "test":
 
 	}

@@ -2,14 +2,16 @@ package mainpac
 
 import (
 	"fmt"
-	"github.com/rotisserie/eris"
-	tb "gopkg.in/tucnak/telebot.v3"
 	"regexp"
 	"strconv"
-	"streamtg/minidb"
-	"streamtg/util"
 	"strings"
 	"time"
+
+	"streamtg/minidb"
+	"streamtg/util"
+
+	"github.com/rotisserie/eris"
+	tb "gopkg.in/telebot.v3"
 )
 
 func (s *Service) TgSetChannelID(x tb.Context) (errReturn error) {

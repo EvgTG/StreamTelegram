@@ -1,22 +1,25 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/mmcdole/gofeed"
-	"github.com/rotisserie/eris"
-	"go.uber.org/fx"
-	tb "gopkg.in/tucnak/telebot.v3"
-	"gopkg.in/tucnak/telebot.v3/layout"
 	"math/rand"
 	"net/http"
+	"sync"
+	"time"
+
 	"streamtg/go-log"
 	"streamtg/mainpac"
 	"streamtg/minidb"
 	"streamtg/twitch"
 	"streamtg/util"
-	"sync"
-	"time"
+
+	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/mmcdole/gofeed"
+	"github.com/rotisserie/eris"
+	"go.uber.org/fx"
+	tb "gopkg.in/telebot.v3"
+	"gopkg.in/telebot.v3/layout"
 )
 
 func New() (app *fx.App) {
@@ -54,15 +57,28 @@ func NewDB() *minidb.MiniDB {
 	return db
 }
 
-func NewService(db *minidb.MiniDB) *mainpac.Service {
+func NewService(lc fx.Lifecycle, db *minidb.MiniDB) *mainpac.Service {
 	// Telegram
 	lt, err := layout.New("bot.yml")
 	util.ErrCheckFatal(err, "layout.New()", "NewService", "init")
+
 	bot, err := tb.NewBot(tb.Settings{
-		Token:     CFG.TgApiToken,
-		Poller:    &tb.LongPoller{Timeout: 30 * time.Second},
+		Token: CFG.TgApiToken,
+		Poller: &tb.Webhook{
+			Listen:      ":" + CFG.LocalPort,
+			IP:          CFG.IP,
+			SecretToken: CFG.SecretToken,
+
+			Endpoint: &tb.WebhookEndpoint{
+				PublicURL: "https://" + CFG.IP + ":" + CFG.Port + CFG.Path,
+				Cert:      "cert/pem.pem",
+			},
+
+			// +.tls если без обратного прокси
+		},
 		ParseMode: tb.ModeHTML,
 	})
+	// long-polling &tb.LongPoller{Timeout: 30 * time.Second},
 	util.ErrCheckFatal(err, "tb.NewBot()", "NewService", "init")
 	bot.Use(lt.Middleware("ru"))
 
@@ -124,6 +140,17 @@ func NewService(db *minidb.MiniDB) *mainpac.Service {
 			TimeCity:             timeWithCity,
 		},
 	}
+
+	err = service.Bot.RemoveWebhook()
+	util.ErrCheckFatal(err, "Bot.RemoveWebhook()", "NewService", "init")
+
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			// service.Bot.Stop()
+			service.Bot.RemoveWebhook()
+			return nil
+		},
+	})
 
 	return service
 }

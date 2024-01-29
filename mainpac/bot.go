@@ -1,8 +1,8 @@
 package mainpac
 
 import (
-	tb "gopkg.in/tucnak/telebot.v3"
-	"gopkg.in/tucnak/telebot.v3/middleware"
+	tb "gopkg.in/telebot.v3"
+	"gopkg.in/telebot.v3/middleware"
 )
 
 func (s *Service) InitBot() {
