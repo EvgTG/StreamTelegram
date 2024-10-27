@@ -7,6 +7,7 @@ import (
 	"streamtg/go-log"
 	"streamtg/util"
 
+	"github.com/mmcdole/gofeed"
 	"github.com/rotisserie/eris"
 	tb "gopkg.in/telebot.v3"
 )
@@ -37,8 +38,17 @@ func (s *Service) YouTubeCheck() {
 		return
 	}
 
-	// получение rss
-	feed, err := s.YouTubeTwitch.Parser.ParseURL("https://www.youtube.com/feeds/videos.xml?channel_id=" + s.YouTubeTwitch.ChannelID)
+	var feed *gofeed.Feed
+	var err error
+
+	// получение rss, попытки обхода замедления
+	for i := 0; i < 5; i++ {
+		feed, err = s.YouTubeTwitch.Parser.ParseURL("https://www.youtube.com/feeds/videos.xml?channel_id=" + s.YouTubeTwitch.ChannelID)
+		if err == nil {
+			break
+		}
+		time.Sleep(2 * time.Second)
+	}
 	if err != nil {
 		log.Error(eris.Wrap(err, "YouTubeCheck - ParseURL()"))
 		return

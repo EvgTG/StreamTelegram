@@ -1,5 +1,6 @@
 files/
 sh/
+.git
 Makefile
 
 # ide
